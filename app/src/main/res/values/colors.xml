@@ -1,10 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
+    <!-- Base colors -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Theme colors -->
+    <color name="primary_green">#2E7D32</color>       <!-- Forest Green: main action buttons -->
+    <color name="secondary_brown">#8D6E63</color>     <!-- Earth Brown: secondary elements -->
+    <color name="accent_blue">#0288D1</color>         <!-- Sky Blue: highlights, links -->
+    <color name="background_dark">#121212</color>     <!-- Dark background -->
+    <color name="surface_dark">#1E1E1E</color>        <!-- Card/list background -->
+
+    <!-- Text colors -->
+    <color name="text_primary">#FFFFFFFF</color>      <!-- White text -->
+    <color name="text_secondary">#B0BEC5</color>      <!-- Light gray text -->
+
+    <!-- Status colors -->
+    <color name="error_red">#D32F2F</color>           <!-- Error messages -->
+    <color name="success_green">#C0CA33</color>       <!-- Success notifications -->
 </resources>
