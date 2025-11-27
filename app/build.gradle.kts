@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -49,7 +50,11 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+
+
     implementation("androidx.core:core-splashscreen:1.0.0")
+    implementation("com.github.bumptech.glide:glide:5.0.5")
+    implementation("com.google.android.material:material:1.12.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -58,4 +63,14 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    implementation (libs.androidx.navigation.compose)
+    implementation (libs.coil.compose)
+    implementation (libs.androidx.room.runtime)
+    implementation (libs.androidx.room.ktx)
+    implementation (libs.androidx.lifecycle.runtime.compose)
+    implementation (libs.androidx.runtime.livedata)
+    implementation (libs.androidx.lifecycle.livedata.ktx)
+    annotationProcessor (libs.androidx.room.compiler)
+    ksp (libs.androidx.room.room.compiler)
 }
