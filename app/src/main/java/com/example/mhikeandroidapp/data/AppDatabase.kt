@@ -7,8 +7,8 @@ import com.example.mhikeandroidapp.data.hike.HikeModel
 import com.example.mhikeandroidapp.data.observation.ObservationDao
 import com.example.mhikeandroidapp.data.observation.ObservationModel
 
-@Database(entities = [HikeModel::class, ObservationModel::class], version = 1, exportSchema = true)
-@TypeConverters(TypeConverters::class)
+@Database(entities = [HikeModel::class, ObservationModel::class], version = 1, exportSchema = false)
+//@TypeConverters(TypeConverters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun hikeDao(): HikeDao
     abstract fun observationDao(): ObservationDao
