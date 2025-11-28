@@ -8,6 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.room.Room
 import com.example.mhikeandroidapp.data.AppDatabase
@@ -27,6 +28,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         installSplashScreen()
+
+        // custom status bar
+        window.statusBarColor = android.graphics.Color.parseColor("#FFFBFE") //background
+        WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = true //icons
 
         // Khởi tạo database and repository
         val db = Room.databaseBuilder(

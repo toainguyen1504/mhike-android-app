@@ -71,6 +71,7 @@ fun HikeListScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+
             // Header: Title + Search (no scroll)
             Spacer(modifier = Modifier.height(12.dp))
             Text(
@@ -236,6 +237,7 @@ fun HikeItem(
             }
             Spacer(modifier = Modifier.width(4.dp))
 
+            // action menu: edit and delete
             Box {
                 IconButton(onClick = { menuExpanded = true }) {
                     Icon(
@@ -247,7 +249,10 @@ fun HikeItem(
 
                 DropdownMenu(
                     expanded = menuExpanded,
-                    onDismissRequest = { menuExpanded = false }
+                    onDismissRequest = { menuExpanded = false },
+                    modifier = Modifier
+                        .width(180.dp)
+                        .padding(horizontal = 8.dp)
                 ) {
                     DropdownMenuItem(
                         text = {

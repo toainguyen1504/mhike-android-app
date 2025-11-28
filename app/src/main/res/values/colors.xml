@@ -10,6 +10,7 @@
     <color name="accent_blue">#0288D1</color>         <!-- Sky Blue: highlights, links -->
     <color name="background_dark">#121212</color>     <!-- Dark background -->
     <color name="surface_dark">#1E1E1E</color>        <!-- Card/list background -->
+    <color name="background_light">#FFFFFBFE</color>
 
     <!-- Text colors -->
     <color name="text_primary">#FFFFFFFF</color>      <!-- White text -->
