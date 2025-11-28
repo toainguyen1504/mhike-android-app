@@ -132,7 +132,9 @@ fun HikeListScreen(
                             hike = hike,
                             onEdit = { selected -> /* mở màn hình edit */ },
                             onDelete = { selected -> viewModel.deleteHike(selected) },
-                            onClick = { selected -> onHikeClick(selected) }
+                            onClick = { selected ->
+                                navController.navigate("hike_detail/${selected.id}")
+                            }
                         )
                     }
                 }
@@ -189,12 +191,12 @@ fun HikeItem(
                 ImageRequest.Builder(context)
                     .data(File(hike.imageUri))
                     .crossfade(true)
-                    .error(R.drawable.logo_2)
-                    .placeholder(R.drawable.logo_2)
+                    .error(R.drawable.default_img)
+                    .placeholder(R.drawable.default_img)
                     .build()
             } else {
                 ImageRequest.Builder(context)
-                    .data(R.drawable.logo_2)
+                    .data(R.drawable.default_img)
                     .build()
             }
 

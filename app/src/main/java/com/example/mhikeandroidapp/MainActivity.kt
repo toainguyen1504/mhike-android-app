@@ -22,6 +22,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.mhikeandroidapp.data.hike.HikeModel
 import com.example.mhikeandroidapp.screens.hike.AddHikeScreen
+import com.example.mhikeandroidapp.screens.hike.HikeDetailScreen
 
 class MainActivity : ComponentActivity() {
 
@@ -65,6 +66,7 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
+                    // add hike screen
                     composable("add_hike") {
                         AddHikeScreen(
                             onBack = { navController.popBackStack() },
@@ -74,6 +76,29 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                     }
+
+                    // hike detail screen by id
+                    composable("hike_detail/{hikeId}") { backStackEntry ->
+                        val hikeId = backStackEntry.arguments?.getString("hikeId")?.toLongOrNull()
+                        val hikeViewModel: HikeViewModel = viewModel(factory = factory)
+
+                        val hike by produceState<HikeModel?>(initialValue = null, hikeId) {
+                            value = hikeId?.let { hikeViewModel.getHikeById(it) }
+                        }
+
+                        hike?.let {
+                            HikeDetailScreen(
+                                hike = it,
+                                onEdit = { /* TODO: edit */ },
+                                onDelete = {
+                                    hikeViewModel.deleteHike(it)
+                                    navController.popBackStack()
+                                },
+                                onAddObservation = { /* TODO: add observation */ }
+                            )
+                        }
+                    }
+
                 }
             }
         }

@@ -22,6 +22,11 @@ class HikeViewModel(private val repository: HikeRepository) : ViewModel() {
         }
     }
 
+    suspend fun getHikeById(id: Long): HikeModel? {
+        return repository.getHikeById(id)
+    }
+
+
     fun deleteHike(hike: HikeModel) {
         viewModelScope.launch {
             repository.deleteHike(hike)
