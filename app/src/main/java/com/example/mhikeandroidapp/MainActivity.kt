@@ -13,10 +13,14 @@ import androidx.room.Room
 import com.example.mhikeandroidapp.data.AppDatabase
 import com.example.mhikeandroidapp.data.hike.HikeRepository
 import com.example.mhikeandroidapp.screens.hike.HikeListScreen
-import com.example.mhikeandroidapp.screens.hike.mockHikes
 import com.example.mhikeandroidapp.ui.theme.MhikeAndroidAppTheme
 import com.example.mhikeandroidapp.viewmodel.HikeViewModel
 import com.example.mhikeandroidapp.viewmodel.HikeViewModelFactory
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.mhikeandroidapp.data.hike.HikeModel
+import com.example.mhikeandroidapp.screens.hike.AddHikeScreen
 
 class MainActivity : ComponentActivity() {
 
@@ -24,7 +28,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         installSplashScreen()
 
-        // Khởi tạo database và repository
+        // Khởi tạo database and repository
         val db = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java,
@@ -36,19 +40,39 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             MhikeAndroidAppTheme {
+                val navController = rememberNavController()
                 val hikeViewModel: HikeViewModel = viewModel(factory = factory)
                 val hikes by hikeViewModel.hikes.collectAsState(initial = emptyList())
 
-                Scaffold { innerPadding ->
-                    HikeListScreen(
-                        modifier = Modifier.padding(innerPadding),
-//                      hikes = hikes,
-                        hikes = mockHikes, // dùng mock thay vì viewModel
-                        onSearch = { query -> /* TODO: search */ },
-                        onHikeClick = { hike -> /* TODO: navigate to detail */ }
-                    )
+                NavHost(
+                    navController = navController,
+                    startDestination = "hike_list"
+                ) {
+                    composable("hike_list") {
+                        Scaffold { innerPadding ->
+                            HikeListScreen(
+                                modifier = Modifier.padding(innerPadding),
+                                navController = navController, // truyền vào để điều hướng
+                                hikes = hikes,
+                                onSearch = { query -> /* TODO: search */ },
+                                onHikeClick = { hike -> /* TODO: navigate to detail */ }
+                            )
+                        }
+                    }
+
+                    composable("add_hike") {
+                        AddHikeScreen(
+                            onBack = { navController.popBackStack() },
+                            onSave = { hike ->
+                                hikeViewModel.addHike(hike)
+                                navController.popBackStack()
+                            }
+                        )
+                    }
                 }
             }
         }
     }
+
 }
+

@@ -2,6 +2,7 @@ package com.example.mhikeandroidapp.screens.hike
 
 import android.net.Uri
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.CircleShape
@@ -11,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -18,6 +20,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.mhikeandroidapp.R
 import com.example.mhikeandroidapp.data.hike.HikeModel
@@ -52,79 +56,108 @@ fun HikeListScreen(
     hikes: List<HikeModel>,
     onSearch: (String) -> Unit,
     onHikeClick: (HikeModel) -> Unit,
-    modifier: Modifier
+    modifier: Modifier,
+    navController: NavHostController
 ) {
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-//        val PrimaryGreen = Color(0xFF2E7D32)
-        val LightPrimaryGreen = PrimaryGreen.copy(alpha = 0.1f)
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+            val LightPrimaryGreen = PrimaryGreen.copy(alpha = 0.1f)
+            Spacer(modifier = Modifier.height(24.dp))
 
-        Spacer(modifier = Modifier.height(24.dp))
-        Text(
-            text = "Hiker Management",
-            style = MaterialTheme.typography.displayLarge,
-            color = PrimaryGreen
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Search Input
-        OutlinedTextField(
-            value = searchQuery,
-            onValueChange = {
-                searchQuery = it
-                onSearch(it.text)
-            },
-            placeholder = {
-                Text(
-                    text = "Search My Hikes",
-                    color = PrimaryGreen
-                )
-            },
-            leadingIcon = {
-                Icon(
-                    painter = painterResource(id = R.drawable.search_icon),
-                    contentDescription = "Search",
-                    modifier = Modifier.size(24.dp),
-                    tint = PrimaryGreen
-                )
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            shape = RoundedCornerShape(24.dp),
-            singleLine = true,
-            colors = TextFieldDefaults.colors(
-                focusedIndicatorColor = PrimaryGreen,
-                unfocusedIndicatorColor = Color.Transparent,
-                cursorColor = PrimaryGreen,
-                focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                focusedContainerColor = LightPrimaryGreen,
-                unfocusedContainerColor = LightPrimaryGreen
-            )
-        )
-
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        if (hikes.isEmpty()) {
+            // Title
             Text(
-                text = "No hikes yet. Add one!",
-                style = MaterialTheme.typography.bodyLarge,
-                color = TextSecondary
+                text = "Hiker Management",
+                style = MaterialTheme.typography.displayLarge,
+                color = PrimaryGreen
             )
-        } else {
-            Column {
-                hikes.forEach { hike ->
-                    HikeItem(hike = hike, onClick = { onHikeClick(hike) })
-                    Spacer(modifier = Modifier.height(12.dp))
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Search
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = {
+                    searchQuery = it
+                    onSearch(it.text)
+                },
+                placeholder = {
+                    Text(
+                        text = "Search My Hikes",
+                        color = PrimaryGreen
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        painter = painterResource(id = R.drawable.search_icon),
+                        contentDescription = "Search",
+                        modifier = Modifier.size(24.dp),
+                        tint = PrimaryGreen
+                    )
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(24.dp),
+                singleLine = true,
+                colors = TextFieldDefaults.colors(
+                    focusedIndicatorColor = PrimaryGreen,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    cursorColor = PrimaryGreen,
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    focusedContainerColor = LightPrimaryGreen,
+                    unfocusedContainerColor = LightPrimaryGreen
+                )
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Hike list
+            if (hikes.isEmpty()) {
+                Text(
+                    text = "No hikes yet. Add one!",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = TextSecondary
+                )
+            } else {
+                Column {
+                    hikes.forEach { hike ->
+                        HikeItem(hike = hike, onClick = { onHikeClick(hike) })
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
                 }
             }
         }
+
+        // Floating Add Hike Button
+        IconButton(
+            onClick = {
+                navController.navigate("add_hike")
+            },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 24.dp, bottom = 64.dp)
+                .size(56.dp)
+                .shadow(
+                    elevation = 8.dp,
+                    shape = CircleShape,
+                    clip = false
+                )
+                .clip(CircleShape)
+                .background(PrimaryGreen)
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.plus_icon),
+                contentDescription = "Add Hike",
+                tint = Color.White,
+                modifier = Modifier.size(24.dp)
+            )
+        }
     }
 }
+
 @Composable
 fun HikeItem(hike: HikeModel, onClick: () -> Unit) {
     Card(
@@ -204,11 +237,13 @@ fun formatDate(epochMs: Long): String {
 @Composable
 fun HikeListScreenPreview() {
     MhikeAndroidAppTheme {
+        val dummyNavController = rememberNavController()
         HikeListScreen(
-            modifier = Modifier,
+            navController = dummyNavController,
             hikes = mockHikes,
             onSearch = {},
-            onHikeClick = {}
+            onHikeClick = {},
+            modifier = Modifier
         )
     }
 }
