@@ -1,6 +1,7 @@
 package com.example.mhikeandroidapp.screens.hike
 
 import android.app.DatePickerDialog
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -28,11 +29,13 @@ import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.example.mhikeandroidapp.R
 import com.example.mhikeandroidapp.data.hike.HikeModel
+import com.example.mhikeandroidapp.ui.theme.ErrorRed
 import com.example.mhikeandroidapp.ui.theme.PrimaryGreen
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import kotlin.compareTo
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,7 +52,7 @@ fun AddHikeScreen(
     var dateMs by remember { mutableStateOf(System.currentTimeMillis()) }
     var parking by remember { mutableStateOf(false) }
     var lengthKm by remember { mutableStateOf("") }
-    var difficulty by remember { mutableStateOf("Medium") }
+//    var difficulty by remember { mutableStateOf("Medium") }
     var description by remember { mutableStateOf("") }
     var duration by remember { mutableStateOf("") }
     var groupSize by remember { mutableStateOf("") }
@@ -63,6 +66,30 @@ fun AddHikeScreen(
             }
         }
     )
+
+    // difficulty
+    val difficultyOptions = listOf("Easy", "Medium", "Hard")
+    var expanded by remember { mutableStateOf(false) }
+    var difficulty by remember { mutableStateOf("") }
+
+
+    // state errors
+    var nameError by remember { mutableStateOf(false) }
+    var locationError by remember { mutableStateOf(false) }
+    var lengthError by remember { mutableStateOf(false) }
+    var difficultyError by remember { mutableStateOf(false) }
+    var parkingError by remember { mutableStateOf(false) }
+
+    // check validate
+    fun isValid(): Boolean {
+        return name.isNotBlank() &&
+                location.isNotBlank() &&
+                dateMs > 0 &&
+                lengthKm.toDoubleOrNull() != null &&
+                difficulty.isNotBlank() &&
+                parking
+    }
+
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
@@ -152,12 +179,21 @@ fun AddHikeScreen(
                     item {
                         OutlinedTextField(
                             value = name,
+                            isError = nameError,
                             onValueChange = { name = it },
                             label = { Text("Hike Name *") },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(64.dp),
-                            colors = inputColors
+                            colors = if (nameError) {
+                                TextFieldDefaults.colors(
+                                    focusedIndicatorColor = ErrorRed,
+                                    unfocusedIndicatorColor = ErrorRed,
+                                    cursorColor = ErrorRed,
+                                    focusedContainerColor = LightPrimaryGreen,
+                                    unfocusedContainerColor = LightPrimaryGreen
+                                )
+                            } else inputColors
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                     }
@@ -167,10 +203,19 @@ fun AddHikeScreen(
 
                         OutlinedTextField(
                             value = location,
+                            isError = locationError,
                             onValueChange = { location = it },
                             label = { Text("Location *") },
                             modifier = Modifier.inputModifier(),
-                            colors = inputColors
+                            colors = if (locationError ) {
+                                TextFieldDefaults.colors(
+                                    focusedIndicatorColor = ErrorRed,
+                                    unfocusedIndicatorColor = ErrorRed,
+                                    cursorColor = ErrorRed,
+                                    focusedContainerColor = LightPrimaryGreen,
+                                    unfocusedContainerColor = LightPrimaryGreen
+                                )
+                            } else inputColors
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                     }
@@ -225,8 +270,21 @@ fun AddHikeScreen(
                     // Parking
                     item {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Checkbox(checked = parking, onCheckedChange = { parking = it })
-                            Text("Parking Available *")
+                            Checkbox(
+                                checked = parking,
+                                onCheckedChange = {
+                                    parking = it
+                                    parkingError = false
+                                },
+                                colors = CheckboxDefaults.colors(
+                                    checkedColor = PrimaryGreen,
+                                    uncheckedColor = if (parkingError) ErrorRed else MaterialTheme.colorScheme.onSurface
+                                )
+                            )
+                            Text(
+                                text = "Parking Available *",
+                                color = if (parkingError) ErrorRed else MaterialTheme.colorScheme.onSurface
+                            )
                         }
                     }
 
@@ -234,11 +292,20 @@ fun AddHikeScreen(
                     item {
                         OutlinedTextField(
                             value = lengthKm,
+                            isError = lengthError,
                             onValueChange = { lengthKm = it },
                             label = { Text("Length (km) *") },
                             modifier = Modifier.inputModifier(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            colors = inputColors
+                            colors = if (lengthError) {
+                                TextFieldDefaults.colors(
+                                    focusedIndicatorColor = ErrorRed,
+                                    unfocusedIndicatorColor = ErrorRed,
+                                    cursorColor = ErrorRed,
+                                    focusedContainerColor = LightPrimaryGreen,
+                                    unfocusedContainerColor = LightPrimaryGreen
+                                )
+                            } else inputColors
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                     }
@@ -246,34 +313,37 @@ fun AddHikeScreen(
                     // Level of difficulty
                     item {
                         Spacer(modifier = Modifier.height(8.dp))
-                        val difficultyOptions = listOf("Easy", "Medium", "Hard")
-                        var expanded by remember { mutableStateOf(false) }
-                        var difficulty by remember { mutableStateOf("") }
 
                         ExposedDropdownMenuBox(
                             expanded = expanded,
                             onExpandedChange = { expanded = !expanded }
                         ) {
                             OutlinedTextField(
-                                value = difficulty,
+                                value = if (difficulty.isBlank()) "Choose difficulty *" else difficulty,
                                 onValueChange = {},
                                 readOnly = true,
-                                placeholder = {
-                                    if (difficulty.isBlank()) {
-                                        Text(
-                                            text = "Choose difficulty *",
-                                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                                        )
-                                    }
-                                },
+                                isError = difficultyError,
                                 trailingIcon = {
                                     ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                                 },
                                 modifier = Modifier
                                     .menuAnchor()
                                     .fillMaxWidth(),
-                                colors = inputColors
+                                textStyle = MaterialTheme.typography.bodyLarge.copy(
+                                    color = if (difficultyError && difficulty.isBlank()) ErrorRed
+                                    else MaterialTheme.colorScheme.onSurface
+                                ),
+                                colors = if (difficultyError) {
+                                    TextFieldDefaults.colors(
+                                        focusedIndicatorColor = ErrorRed,
+                                        unfocusedIndicatorColor = ErrorRed,
+                                        cursorColor = ErrorRed,
+                                        focusedContainerColor = LightPrimaryGreen,
+                                        unfocusedContainerColor = LightPrimaryGreen
+                                    )
+                                } else inputColors
                             )
+
 
                             ExposedDropdownMenu(
                                 expanded = expanded,
@@ -343,10 +413,27 @@ fun AddHikeScreen(
                     .padding(top = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
+                // Back btn
                 Button(onClick = onBack) {
                     Text("Back")
                 }
+
+                // Save btn
                 Button(onClick = {
+                    val valid = isValid()
+
+                    if (!valid) {
+                        nameError = name.isBlank()
+                        locationError = location.isBlank()
+                        lengthError = lengthKm.toDoubleOrNull() == null
+                        difficultyError = difficulty.isBlank()
+                        parkingError = !parking
+
+                        Toast.makeText(context, "Please fill all required fields", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+
+                    // Save to database
                     val hike = HikeModel(
                         name = name,
                         location = location,
@@ -367,6 +454,10 @@ fun AddHikeScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
         }
-    }
 
+    }
 }
+
+
+
+
