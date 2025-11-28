@@ -27,6 +27,8 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.mhikeandroidapp.R
 import com.example.mhikeandroidapp.data.hike.HikeModel
+import com.example.mhikeandroidapp.ui.theme.AccentBlue
+import com.example.mhikeandroidapp.ui.theme.ErrorRed
 import com.example.mhikeandroidapp.ui.theme.PrimaryGreen
 import com.example.mhikeandroidapp.ui.theme.HighlightsGreen
 import com.example.mhikeandroidapp.ui.theme.TextSecondary
@@ -186,12 +188,12 @@ fun HikeItem(
                 ImageRequest.Builder(context)
                     .data(File(hike.imageUri))
                     .crossfade(true)
-                    .error(R.drawable.logo)
-                    .placeholder(R.drawable.logo)
+                    .error(R.drawable.logo_2)
+                    .placeholder(R.drawable.logo_2)
                     .build()
             } else {
                 ImageRequest.Builder(context)
-                    .data(R.drawable.logo)
+                    .data(R.drawable.logo_2)
                     .build()
             }
 
@@ -248,20 +250,31 @@ fun HikeItem(
                     onDismissRequest = { menuExpanded = false }
                 ) {
                     DropdownMenuItem(
-                        text = { Text("Edit") },
+                        text = {
+                            Text(
+                                "Edit",
+                                color = AccentBlue // màu xanh bạn định nghĩa trong theme
+                            )
+                        },
                         onClick = {
                             menuExpanded = false
                             onEdit(hike)
                         }
                     )
                     DropdownMenuItem(
-                        text = { Text("Delete") },
+                        text = {
+                            Text(
+                                "Delete",
+                                color = ErrorRed // màu đỏ bạn định nghĩa trong theme
+                            )
+                        },
                         onClick = {
                             menuExpanded = false
                             onDelete(hike)
                         }
                     )
                 }
+
             }
         }
     }

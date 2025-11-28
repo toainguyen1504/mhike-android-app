@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 class HikeViewModel(private val repository: HikeRepository) : ViewModel() {
 
     val hikes = repository.getAllHikesFlow()
-        .map { it.sortedBy { hike -> hike.dateMs } }
+        .map { list -> list.sortedByDescending { it.dateMs } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     fun addHike(hike: HikeModel) {

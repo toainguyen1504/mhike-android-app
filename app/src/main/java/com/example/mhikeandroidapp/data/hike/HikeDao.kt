@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 interface HikeDao {
 
     // get List hikes (live)
-    @Query("SELECT * FROM hikes ORDER BY dateMs ASC")
+    @Query("SELECT * FROM hikes ORDER BY dateMs DESC")
     fun getAllHikesFlow(): Flow<List<HikeModel>>
 
     // get all hikes
