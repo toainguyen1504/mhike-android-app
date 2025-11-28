@@ -20,17 +20,15 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.mhikeandroidapp.R
 import com.example.mhikeandroidapp.data.hike.HikeModel
-import com.example.mhikeandroidapp.ui.theme.MhikeAndroidAppTheme
 import com.example.mhikeandroidapp.ui.theme.PrimaryGreen
 import com.example.mhikeandroidapp.ui.theme.HighlightsGreen
 import com.example.mhikeandroidapp.ui.theme.TextSecondary
+import com.example.mhikeandroidapp.viewmodel.HikeViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -56,7 +54,7 @@ val mockHikes = listOf(
 
 @Composable
 fun HikeListScreen(
-    hikes: List<HikeModel>,
+    viewModel: HikeViewModel,
     onSearch: (String) -> Unit,
     onHikeClick: (HikeModel) -> Unit,
     modifier: Modifier = Modifier,
@@ -64,10 +62,11 @@ fun HikeListScreen(
 ) {
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
     val LightPrimaryGreen = PrimaryGreen.copy(alpha = 0.1f)
+    val hikes by viewModel.hikes.collectAsState()
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-            // Header: Title + Search (không cuộn)
+            // Header: Title + Search (no scroll)
             Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = "Hiker Management",
@@ -110,7 +109,7 @@ fun HikeListScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Danh sách cuộn
+            // List hike
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -125,11 +124,16 @@ fun HikeListScreen(
                     }
                 } else {
                     items(hikes) { hike ->
-                        HikeItem(hike = hike, onClick = { onHikeClick(hike) })
+                        HikeItem(
+                            hike = hike,
+                            onEdit = { selected -> /* mở màn hình edit */ },
+                            onDelete = { selected -> viewModel.deleteHike(selected) },
+                            onClick = { selected -> onHikeClick(selected) }
+                        )
                     }
                 }
 
-                item { Spacer(modifier = Modifier.height(80.dp)) } // tránh bị che bởi nút Add
+                item { Spacer(modifier = Modifier.height(80.dp)) }
             }
         }
 
@@ -154,14 +158,20 @@ fun HikeListScreen(
     }
 }
 
-
 @Composable
-fun HikeItem(hike: HikeModel, onClick: () -> Unit) {
+fun HikeItem(
+    hike: HikeModel,
+    onEdit: (HikeModel) -> Unit,
+    onDelete: (HikeModel) -> Unit,
+    onClick: (HikeModel) -> Unit
+) {
+    var menuExpanded by remember { mutableStateOf(false) }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 6.dp)
-            .clickable { onClick() },
+            .clickable { onClick(hike) },
         shape = RoundedCornerShape(12.dp),
         border = BorderStroke(1.dp, TextSecondary),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -181,7 +191,7 @@ fun HikeItem(hike: HikeModel, onClick: () -> Unit) {
                 contentScale = ContentScale.Crop
             )
 
-            Spacer(modifier = Modifier.width(6.dp)) // giảm khoảng cách ảnh và nội dung
+            Spacer(modifier = Modifier.width(6.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
@@ -192,7 +202,7 @@ fun HikeItem(hike: HikeModel, onClick: () -> Unit) {
                     overflow = TextOverflow.Ellipsis
                 )
 
-                Spacer(modifier = Modifier.height(6.dp)) // giãn dòng
+                Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
                     text = hike.description ?: "No description",
@@ -202,7 +212,7 @@ fun HikeItem(hike: HikeModel, onClick: () -> Unit) {
                     overflow = TextOverflow.Ellipsis
                 )
 
-                Spacer(modifier = Modifier.height(8.dp)) // giãn dòng
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
                     text = formatDate(hike.dateMs),
@@ -210,39 +220,45 @@ fun HikeItem(hike: HikeModel, onClick: () -> Unit) {
                     color = TextSecondary
                 )
             }
-
             Spacer(modifier = Modifier.width(4.dp))
 
-            IconButton(onClick = { onClick() }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.menu_dots_vertical_icon),
-                    contentDescription = "Options",
-                    tint = MaterialTheme.colorScheme.primary
-                )
+            Box {
+                IconButton(onClick = { menuExpanded = true }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.menu_dots_vertical_icon),
+                        contentDescription = "Options",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = menuExpanded,
+                    onDismissRequest = { menuExpanded = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Edit") },
+                        onClick = {
+                            menuExpanded = false
+                            onEdit(hike)
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Delete") },
+                        onClick = {
+                            menuExpanded = false
+                            onDelete(hike)
+                        }
+                    )
+                }
             }
         }
     }
 }
-
 
 fun formatDate(epochMs: Long): String {
     val sdf = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
     return sdf.format(Date(epochMs))
 }
 
-@Preview(showBackground = true)
-@Composable
-fun HikeListScreenPreview() {
-    MhikeAndroidAppTheme {
-        val dummyNavController = rememberNavController()
-        HikeListScreen(
-            navController = dummyNavController,
-            hikes = mockHikes,
-            onSearch = {},
-            onHikeClick = {},
-            modifier = Modifier
-        )
-    }
-}
 
 

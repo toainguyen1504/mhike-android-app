@@ -51,9 +51,9 @@ class MainActivity : ComponentActivity() {
                     composable("hike_list") {
                         Scaffold { innerPadding ->
                             HikeListScreen(
+                                viewModel = hikeViewModel,
                                 modifier = Modifier.padding(innerPadding),
-                                navController = navController, // truyền vào để điều hướng
-                                hikes = hikes,
+                                navController = navController,
                                 onSearch = { query -> /* TODO: search */ },
                                 onHikeClick = { hike -> /* TODO: navigate to detail */ }
                             )
