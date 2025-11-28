@@ -46,7 +46,7 @@ val mockHikes = listOf(
         groupSize = 5,
         latitude = 11.3602,
         longitude = 106.1427,
-        imageUri = null, // hoặc "file:///android_asset/sample_hike.jpg"
+        imageUri = null,
         reminderMs = null
     )
 )
@@ -64,9 +64,9 @@ fun HikeListScreen(
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
             val LightPrimaryGreen = PrimaryGreen.copy(alpha = 0.1f)
-            Spacer(modifier = Modifier.height(24.dp))
 
             // Title
+            Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = "Hiker Management",
                 style = MaterialTheme.typography.displayLarge,
@@ -184,7 +184,7 @@ fun HikeItem(hike: HikeModel, onClick: () -> Unit) {
                 contentScale = ContentScale.Crop
             )
 
-            Spacer(modifier = Modifier.width(4.dp)) // giảm khoảng cách ảnh và nội dung
+            Spacer(modifier = Modifier.width(6.dp)) // giảm khoảng cách ảnh và nội dung
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(

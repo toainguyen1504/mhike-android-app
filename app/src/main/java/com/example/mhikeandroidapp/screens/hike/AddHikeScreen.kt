@@ -1,6 +1,9 @@
 package com.example.mhikeandroidapp.screens.hike
 
 import android.app.DatePickerDialog
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -22,6 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import coil.compose.rememberAsyncImagePainter
 import com.example.mhikeandroidapp.R
 import com.example.mhikeandroidapp.data.hike.HikeModel
 import com.example.mhikeandroidapp.ui.theme.PrimaryGreen
@@ -38,6 +42,7 @@ fun AddHikeScreen(
     onSave: (HikeModel) -> Unit
 ) {
     val LightPrimaryGreen = PrimaryGreen.copy(alpha = 0.1f)
+    val context = LocalContext.current
 
     var name by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
@@ -49,6 +54,15 @@ fun AddHikeScreen(
     var duration by remember { mutableStateOf("") }
     var groupSize by remember { mutableStateOf("") }
     var imageUri by remember { mutableStateOf("") }
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = { uri ->
+            if (uri != null) {
+                imageUri = uri.toString()
+            }
+        }
+    )
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
@@ -68,7 +82,7 @@ fun AddHikeScreen(
             )
 
             // Title
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = "Add New Hike",
                 style = MaterialTheme.typography.displayLarge,
@@ -88,7 +102,6 @@ fun AddHikeScreen(
 
                     // Thumbnail
                     item {
-                        // Text("Thumbnail", style = MaterialTheme.typography.bodyMedium)
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -96,16 +109,31 @@ fun AddHikeScreen(
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(Color.Gray)
                                 .clickable {
-                                    // TODO: mở chọn ảnh từ thư viện nếu muốn
+                                    imagePickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                                 },
                             contentAlignment = Alignment.Center
                         ) {
+                            val isDefaultImage = imageUri.isBlank()
+                            val painter = if (isDefaultImage) {
+                                painterResource(id = R.drawable.default_img)
+                            } else {
+                                rememberAsyncImagePainter(model = imageUri)
+                            }
+
                             Image(
-                                painter = painterResource(id = R.drawable.default_img),
+                                painter = painter,
                                 contentDescription = "Hike Thumbnail",
                                 modifier = Modifier.matchParentSize(),
                                 contentScale = ContentScale.Crop
                             )
+
+                            if (isDefaultImage) {
+                                Box(
+                                    modifier = Modifier
+                                        .matchParentSize()
+                                        .background(Color.Black.copy(alpha = 0.3f)) // lớp phủ đen nhẹ
+                                )
+                            }
 
                             Text(
                                 text = "Choose Image",
@@ -125,7 +153,7 @@ fun AddHikeScreen(
                         OutlinedTextField(
                             value = name,
                             onValueChange = { name = it },
-                            label = { Text("Hike Name") },
+                            label = { Text("Hike Name *") },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(64.dp),
@@ -140,7 +168,7 @@ fun AddHikeScreen(
                         OutlinedTextField(
                             value = location,
                             onValueChange = { location = it },
-                            label = { Text("Location") },
+                            label = { Text("Location *") },
                             modifier = Modifier.inputModifier(),
                             colors = inputColors
                         )
@@ -149,7 +177,6 @@ fun AddHikeScreen(
 
                     // Date
                     item {
-                        val context = LocalContext.current
                         val dateFormatter = remember {
                             SimpleDateFormat(
                                 "dd MMM yyyy",
@@ -181,13 +208,13 @@ fun AddHikeScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.DateRange,
-                                contentDescription = "Pick Date",
+                                contentDescription = "Pick Date *",
                                 tint = PrimaryGreen,
                                 modifier = Modifier.size(24.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Date: ${dateFormatter.format(Date(dateMs))}",
+                                text = "Date*: ${dateFormatter.format(Date(dateMs))}",
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
@@ -195,12 +222,20 @@ fun AddHikeScreen(
                         Spacer(modifier = Modifier.height(8.dp))
                     }
 
+                    // Parking
+                    item {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(checked = parking, onCheckedChange = { parking = it })
+                            Text("Parking Available *")
+                        }
+                    }
+
                     // Lenght
                     item {
                         OutlinedTextField(
                             value = lengthKm,
                             onValueChange = { lengthKm = it },
-                            label = { Text("Length (km)") },
+                            label = { Text("Length (km) *") },
                             modifier = Modifier.inputModifier(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             colors = inputColors
@@ -226,7 +261,7 @@ fun AddHikeScreen(
                                 placeholder = {
                                     if (difficulty.isBlank()) {
                                         Text(
-                                            text = "Choose difficulty",
+                                            text = "Choose difficulty *",
                                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                                         )
                                     }
@@ -297,18 +332,11 @@ fun AddHikeScreen(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                     }
-
-                    // Parking
-                    item {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Checkbox(checked = parking, onCheckedChange = { parking = it })
-                            Text("Parking Available")
-                        }
-                    }
                 }
             }
 
             // Action buttons
+            Spacer(modifier = Modifier.height(12.dp))
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
