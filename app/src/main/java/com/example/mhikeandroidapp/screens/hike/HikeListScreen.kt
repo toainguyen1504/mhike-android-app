@@ -205,10 +205,11 @@ fun HikeItem(
                 contentDescription = "Hike Image",
                 modifier = Modifier
                     .size(84.dp)
-                    .clip(CircleShape),
+                    .padding(vertical = 4.dp)
+                    .clip(RoundedCornerShape(8.dp)),
                 contentScale = ContentScale.Crop
             )
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(12.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
