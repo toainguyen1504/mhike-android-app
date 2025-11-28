@@ -17,18 +17,21 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.mhikeandroidapp.R
 import com.example.mhikeandroidapp.data.hike.HikeModel
 import com.example.mhikeandroidapp.ui.theme.PrimaryGreen
 import com.example.mhikeandroidapp.ui.theme.HighlightsGreen
 import com.example.mhikeandroidapp.ui.theme.TextSecondary
 import com.example.mhikeandroidapp.viewmodel.HikeViewModel
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -73,7 +76,6 @@ fun HikeListScreen(
                 style = MaterialTheme.typography.displayLarge,
                 color = PrimaryGreen
             )
-
             Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedTextField(
@@ -106,7 +108,6 @@ fun HikeListScreen(
                     unfocusedContainerColor = LightPrimaryGreen
                 )
             )
-
             Spacer(modifier = Modifier.height(16.dp))
 
             // List hike
@@ -180,18 +181,29 @@ fun HikeItem(
             modifier = Modifier.padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            val imageModel = hike.imageUri?.let { Uri.parse(it) } ?: R.drawable.logo
+            val context = LocalContext.current
+            val imageRequest = if (!hike.imageUri.isNullOrBlank()) {
+                ImageRequest.Builder(context)
+                    .data(File(hike.imageUri))
+                    .crossfade(true)
+                    .error(R.drawable.logo)
+                    .placeholder(R.drawable.logo)
+                    .build()
+            } else {
+                ImageRequest.Builder(context)
+                    .data(R.drawable.logo)
+                    .build()
+            }
 
             AsyncImage(
-                model = imageModel,
+                model = imageRequest,
                 contentDescription = "Hike Image",
                 modifier = Modifier
-                    .size(92.dp)
+                    .size(84.dp)
                     .clip(CircleShape),
                 contentScale = ContentScale.Crop
             )
-
-            Spacer(modifier = Modifier.width(6.dp))
+            Spacer(modifier = Modifier.width(8.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
@@ -259,6 +271,3 @@ fun formatDate(epochMs: Long): String {
     val sdf = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
     return sdf.format(Date(epochMs))
 }
-
-
-

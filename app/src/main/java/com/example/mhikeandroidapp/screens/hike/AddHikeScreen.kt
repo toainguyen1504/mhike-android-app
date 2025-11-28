@@ -1,6 +1,7 @@
 package com.example.mhikeandroidapp.screens.hike
 
 import android.app.DatePickerDialog
+import android.content.Intent
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -34,6 +35,8 @@ import com.example.mhikeandroidapp.ui.theme.HighlightsGreen
 import com.example.mhikeandroidapp.ui.theme.PrimaryGreen
 import com.example.mhikeandroidapp.ui.theme.TextBlack
 import com.example.mhikeandroidapp.ui.theme.TextSecondary
+import java.io.File
+import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -54,17 +57,33 @@ fun AddHikeScreen(
     var dateMs by remember { mutableStateOf(System.currentTimeMillis()) }
     var parking: Boolean? by remember { mutableStateOf(null) }
     var lengthKm by remember { mutableStateOf("") }
-//    var difficulty by remember { mutableStateOf("Medium") }
     var description by remember { mutableStateOf("") }
     var duration by remember { mutableStateOf("") }
     var groupSize by remember { mutableStateOf("") }
     var imageUri by remember { mutableStateOf("") }
 
+    // thumbnail hike
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { uri ->
             if (uri != null) {
-                imageUri = uri.toString()
+                val contentResolver = context.contentResolver
+
+                // Tạo file mới trong bộ nhớ riêng của app
+                val fileName = "hike_${System.currentTimeMillis()}.jpg"
+                val file = File(context.filesDir, fileName)
+
+                try {
+                    contentResolver.openInputStream(uri)?.use { input ->
+                        FileOutputStream(file).use { output ->
+                            input.copyTo(output)
+                        }
+                    }
+                    // Lưu đường dẫn file thay vì content://
+                    imageUri = file.absolutePath
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
             }
         }
     )
