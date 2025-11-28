@@ -5,6 +5,8 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -27,6 +29,7 @@ import com.example.mhikeandroidapp.R
 import com.example.mhikeandroidapp.data.hike.HikeModel
 import com.example.mhikeandroidapp.ui.theme.MhikeAndroidAppTheme
 import com.example.mhikeandroidapp.ui.theme.PrimaryGreen
+import com.example.mhikeandroidapp.ui.theme.HighlightsGreen
 import com.example.mhikeandroidapp.ui.theme.TextSecondary
 import java.text.SimpleDateFormat
 import java.util.*
@@ -56,16 +59,15 @@ fun HikeListScreen(
     hikes: List<HikeModel>,
     onSearch: (String) -> Unit,
     onHikeClick: (HikeModel) -> Unit,
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     navController: NavHostController
 ) {
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
+    val LightPrimaryGreen = PrimaryGreen.copy(alpha = 0.1f)
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-            val LightPrimaryGreen = PrimaryGreen.copy(alpha = 0.1f)
-
-            // Title
+            // Header: Title + Search (không cuộn)
             Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = "Hiker Management",
@@ -75,19 +77,13 @@ fun HikeListScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Search
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = {
                     searchQuery = it
                     onSearch(it.text)
                 },
-                placeholder = {
-                    Text(
-                        text = "Search My Hikes",
-                        color = PrimaryGreen
-                    )
-                },
+                placeholder = { Text("Search My Hikes", color = PrimaryGreen) },
                 leadingIcon = {
                     Icon(
                         painter = painterResource(id = R.drawable.search_icon),
@@ -114,49 +110,50 @@ fun HikeListScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Hike list
-            if (hikes.isEmpty()) {
-                Text(
-                    text = "No hikes yet. Add one!",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = TextSecondary
-                )
-            } else {
-                Column {
-                    hikes.forEach { hike ->
+            // Danh sách cuộn
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                if (hikes.isEmpty()) {
+                    item {
+                        Text(
+                            text = "No hikes yet. Add one!",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = TextSecondary
+                        )
+                    }
+                } else {
+                    items(hikes) { hike ->
                         HikeItem(hike = hike, onClick = { onHikeClick(hike) })
-                        Spacer(modifier = Modifier.height(12.dp))
                     }
                 }
+
+                item { Spacer(modifier = Modifier.height(80.dp)) } // tránh bị che bởi nút Add
             }
         }
 
         // Floating Add Hike Button
         IconButton(
-            onClick = {
-                navController.navigate("add_hike")
-            },
+            onClick = { navController.navigate("add_hike") },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 24.dp, bottom = 64.dp)
-                .size(56.dp)
-                .shadow(
-                    elevation = 8.dp,
-                    shape = CircleShape,
-                    clip = false
-                )
+                .padding(end = 24.dp, bottom = 72.dp)
+                .size(68.dp)
+                .shadow(8.dp, CircleShape, clip = false)
                 .clip(CircleShape)
-                .background(PrimaryGreen)
+                .background(HighlightsGreen)
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.plus_icon),
                 contentDescription = "Add Hike",
                 tint = Color.White,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(28.dp)
             )
         }
     }
 }
+
 
 @Composable
 fun HikeItem(hike: HikeModel, onClick: () -> Unit) {

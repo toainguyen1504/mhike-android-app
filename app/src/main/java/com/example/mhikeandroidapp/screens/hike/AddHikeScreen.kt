@@ -30,7 +30,10 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.mhikeandroidapp.R
 import com.example.mhikeandroidapp.data.hike.HikeModel
 import com.example.mhikeandroidapp.ui.theme.ErrorRed
+import com.example.mhikeandroidapp.ui.theme.HighlightsGreen
 import com.example.mhikeandroidapp.ui.theme.PrimaryGreen
+import com.example.mhikeandroidapp.ui.theme.TextBlack
+import com.example.mhikeandroidapp.ui.theme.TextSecondary
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -50,7 +53,7 @@ fun AddHikeScreen(
     var name by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
     var dateMs by remember { mutableStateOf(System.currentTimeMillis()) }
-    var parking by remember { mutableStateOf(false) }
+    var parking: Boolean? by remember { mutableStateOf(null) }
     var lengthKm by remember { mutableStateOf("") }
 //    var difficulty by remember { mutableStateOf("Medium") }
     var description by remember { mutableStateOf("") }
@@ -72,6 +75,10 @@ fun AddHikeScreen(
     var expanded by remember { mutableStateOf(false) }
     var difficulty by remember { mutableStateOf("") }
 
+    // parking
+    val parkingOptions = listOf("Yes", "No")
+    var parkingExpanded by remember { mutableStateOf(false) }
+
 
     // state errors
     var nameError by remember { mutableStateOf(false) }
@@ -87,7 +94,7 @@ fun AddHikeScreen(
                 dateMs > 0 &&
                 lengthKm.toDoubleOrNull() != null &&
                 difficulty.isNotBlank() &&
-                parking
+                parking != null
     }
 
 
@@ -200,7 +207,6 @@ fun AddHikeScreen(
 
                     // Location
                     item {
-
                         OutlinedTextField(
                             value = location,
                             isError = locationError,
@@ -269,23 +275,53 @@ fun AddHikeScreen(
 
                     // Parking
                     item {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Checkbox(
-                                checked = parking,
-                                onCheckedChange = {
-                                    parking = it
-                                    parkingError = false
+                        ExposedDropdownMenuBox(
+                            expanded = parkingExpanded,
+                            onExpandedChange = { parkingExpanded = !parkingExpanded }
+                        ) {
+                            OutlinedTextField(
+                                value = when (parking) {
+                                    null -> "Choose parking available *"
+                                    true -> "Yes"
+                                    false -> "No"
                                 },
-                                colors = CheckboxDefaults.colors(
-                                    checkedColor = PrimaryGreen,
-                                    uncheckedColor = if (parkingError) ErrorRed else MaterialTheme.colorScheme.onSurface
-                                )
+                                onValueChange = {},
+                                readOnly = true,
+                                isError = parkingError,
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(parkingExpanded) },
+                                modifier = Modifier.menuAnchor().fillMaxWidth(),
+                                textStyle = MaterialTheme.typography.bodyLarge.copy(
+                                    color = if (parkingError && parking == null) ErrorRed
+                                    else MaterialTheme.colorScheme.onSurface
+                                ),
+                                colors = if (parkingError) {
+                                    TextFieldDefaults.colors(
+                                        focusedIndicatorColor = ErrorRed,
+                                        unfocusedIndicatorColor = ErrorRed,
+                                        cursorColor = ErrorRed,
+                                        focusedContainerColor = LightPrimaryGreen,
+                                        unfocusedContainerColor = LightPrimaryGreen
+                                    )
+                                } else inputColors
                             )
-                            Text(
-                                text = "Parking Available *",
-                                color = if (parkingError) ErrorRed else MaterialTheme.colorScheme.onSurface
-                            )
+
+                            ExposedDropdownMenu(
+                                expanded = parkingExpanded,
+                                onDismissRequest = { parkingExpanded = false }
+                            ) {
+                                parkingOptions.forEach { opt ->
+                                    DropdownMenuItem(
+                                        text = { Text(opt) },
+                                        onClick = {
+                                            parking = (opt == "Yes")
+                                            parkingError = false
+                                            parkingExpanded = false
+                                        }
+                                    )
+                                }
+                            }
                         }
+
                     }
 
                     // Lenght
@@ -411,46 +447,64 @@ fun AddHikeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.spacedBy(24.dp) // khoảng cách giữa nút
             ) {
-                // Back btn
-                Button(onClick = onBack) {
+                // Back btn — chiếm 40%
+                Button(
+                    onClick = onBack,
+                    modifier = Modifier
+                        .weight(0.4f)
+                        .height(50.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = TextSecondary,
+                        contentColor = TextBlack
+                    )
+                ) {
                     Text("Back")
                 }
 
-                // Save btn
-                Button(onClick = {
-                    val valid = isValid()
+                // Save btn — chiếm 60%
+                Button(
+                    onClick = {
+                        val valid = isValid()
 
-                    if (!valid) {
-                        nameError = name.isBlank()
-                        locationError = location.isBlank()
-                        lengthError = lengthKm.toDoubleOrNull() == null
-                        difficultyError = difficulty.isBlank()
-                        parkingError = !parking
+                        if (!valid) {
+                            nameError = name.isBlank()
+                            locationError = location.isBlank()
+                            lengthError = lengthKm.toDoubleOrNull() == null
+                            difficultyError = difficulty.isBlank()
+                            parkingError = (parking == null)
 
-                        Toast.makeText(context, "Please fill all required fields", Toast.LENGTH_SHORT).show()
-                        return@Button
-                    }
+                            Toast.makeText(context, "Please fill all required fields", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
 
-                    // Save to database
-                    val hike = HikeModel(
-                        name = name,
-                        location = location,
-                        dateMs = dateMs,
-                        parking = parking,
-                        plannedLengthKm = lengthKm.toDoubleOrNull() ?: 0.0,
-                        difficulty = difficulty,
-                        description = description.ifBlank { null },
-                        estimatedDurationMinutes = duration.toIntOrNull(),
-                        groupSize = groupSize.toIntOrNull(),
-                        imageUri = imageUri
+                        val hike = HikeModel(
+                            name = name,
+                            location = location,
+                            dateMs = dateMs,
+                            parking = parking == true,
+                            plannedLengthKm = lengthKm.toDoubleOrNull() ?: 0.0,
+                            difficulty = difficulty,
+                            description = description.ifBlank { null },
+                            estimatedDurationMinutes = duration.toIntOrNull(),
+                            groupSize = groupSize.toIntOrNull(),
+                            imageUri = imageUri
+                        )
+                        onSave(hike)
+                    },
+                    modifier = Modifier
+                        .weight(0.6f)
+                        .height(50.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = HighlightsGreen,
+                        contentColor = Color.White
                     )
-                    onSave(hike)
-                }) {
+                ) {
                     Text("Add Hike")
                 }
             }
+
 
             Spacer(modifier = Modifier.height(24.dp))
         }
