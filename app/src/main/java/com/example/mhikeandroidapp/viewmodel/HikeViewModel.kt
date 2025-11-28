@@ -1,6 +1,7 @@
 package com.example.mhikeandroidapp.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.mhikeandroidapp.data.hike.HikeModel
 import com.example.mhikeandroidapp.data.hike.HikeRepository
@@ -25,5 +26,17 @@ class HikeViewModel(private val repository: HikeRepository) : ViewModel() {
         viewModelScope.launch {
             repository.deleteHike(hike)
         }
+    }
+}
+
+class HikeViewModelFactory(
+    private val repository: HikeRepository
+) : ViewModelProvider.Factory {
+
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(HikeViewModel::class.java)) {
+            return HikeViewModel(repository) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
