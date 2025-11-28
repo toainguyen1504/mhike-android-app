@@ -23,17 +23,21 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
 
         setContent {
-            MhikeAndroidAppTheme {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-
-                ) {
-                    Greeting(
-                        name = "Android",
-                    )
+            setContent {
+                MhikeAndroidAppTheme {
+                    Scaffold { innerPadding ->
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(innerPadding),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Greeting(name = "Android")
+                        }
+                    }
                 }
             }
+
 
         }
     }
