@@ -316,7 +316,7 @@ fun HikeDetailScreen(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, PrimaryGreen),
+                    border = BorderStroke(1.dp, TextSecondary),
                     colors = CardDefaults.cardColors(containerColor = Color.White)
                 ) {
                     Row(
@@ -344,22 +344,25 @@ fun HikeDetailScreen(
                             model = imageRequest,
                             contentDescription = "Observation Image",
                             modifier = Modifier
-                                .size(64.dp) // nhỏ hơn HikeItem một chút
+                                .size(72.dp)
                                 .clip(RoundedCornerShape(8.dp)),
                             contentScale = ContentScale.Crop
                         )
 
                         Spacer(modifier = Modifier.width(12.dp))
 
-                        // observation info right
+                        // observation info center
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 obs.observationText,
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = MaterialTheme.colorScheme.onSurface,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
                             )
+                            Spacer(modifier = Modifier.height(8.dp))
+
                             obs.comments?.let {
-                                Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     it,
                                     style = MaterialTheme.typography.bodyMedium,
@@ -368,17 +371,40 @@ fun HikeDetailScreen(
                                     overflow = TextOverflow.Ellipsis
                                 )
                             }
-                            Spacer(modifier = Modifier.height(6.dp))
+                            Spacer(modifier = Modifier.height(10.dp))
+
                             Text(
                                 formatDateDetail(obs.timeMs),
-                                style = MaterialTheme.typography.labelSmall,
+                                style = MaterialTheme.typography.bodyMedium,
                                 color = TextSecondary
                             )
+                        }
+
+                        // action buttons right (vertical)
+                        Column(
+                            horizontalAlignment = Alignment.End,
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            IconButton(onClick = { /* TODO: edit observation */ }) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.pencil_icon),
+                                    contentDescription = "Edit Observation",
+                                    tint = AccentBlue,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            IconButton(onClick = { /* TODO: delete observation */ }) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.delete_icon),
+                                    contentDescription = "Delete Observation",
+                                    tint = ErrorRed,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
                         }
                     }
                 }
             }
-
 
             item {
                 Spacer(modifier = Modifier.height(500.dp)) // add margin bottom to test SCROLL
