@@ -77,12 +77,20 @@ fun HikeDetailScreen(
     var observationText by remember { mutableStateOf("") }
     var comments by remember { mutableStateOf("") }
     var imageObservationUri by remember { mutableStateOf("") }
+    var observationError by remember { mutableStateOf(false) } // state  error
 
     // collect observation list
     val observations by observationViewModel
         .getObservationsForHike(hike.id)
         .collectAsState(initial = emptyList())
 
+    // Reset form function
+    fun resetObservationForm() {
+        observationText = ""
+        comments = ""
+        imageObservationUri = ""
+        observationError = false
+    }
 
     // thumbnail observation
     val imagePickerLauncher = rememberLauncherForActivityResult(
@@ -419,7 +427,10 @@ fun HikeDetailScreen(
         //  Add observation Dialog
         if (showAddObservationDialog) {
             AlertDialog(
-                onDismissRequest = { showAddObservationDialog = false },
+                onDismissRequest = {
+                    showAddObservationDialog = false
+                    resetObservationForm()
+                },
                 title = {
                     Text("Add Observation", style = MaterialTheme.typography.titleMedium, color = PrimaryGreen)
                 },
@@ -471,12 +482,35 @@ fun HikeDetailScreen(
                             )
                         }
 
-                        // Observation Text
+                        // Observation Text (required)
                         OutlinedTextField(
                             value = observationText,
-                            onValueChange = { observationText = it },
+                            isError = observationError,
+                            onValueChange = {
+                                observationText = it
+                                if (observationError && it.isNotBlank()) observationError = false
+                            },
                             label = { Text("Observation *...") },
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = if (observationError) {
+                                TextFieldDefaults.colors(
+                                    focusedIndicatorColor = ErrorRed,
+                                    unfocusedIndicatorColor = ErrorRed,
+                                    cursorColor = ErrorRed,
+                                    focusedContainerColor = LightPrimaryGreen,
+                                    unfocusedContainerColor = LightPrimaryGreen
+                                )
+                            } else {
+                                TextFieldDefaults.colors(
+                                    focusedIndicatorColor = PrimaryGreen,
+                                    unfocusedIndicatorColor = Color.Transparent,
+                                    cursorColor = PrimaryGreen,
+                                    focusedTextColor = PrimaryGreen,
+                                    unfocusedTextColor = TextBlack,
+                                    focusedContainerColor = LightPrimaryGreen,
+                                    unfocusedContainerColor = LightPrimaryGreen
+                                )
+                            }
                         )
 
                         // Comments
@@ -484,7 +518,16 @@ fun HikeDetailScreen(
                             value = comments,
                             onValueChange = { comments = it },
                             label = { Text("Comments here...") },
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = TextFieldDefaults.colors(
+                                focusedIndicatorColor = PrimaryGreen,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                cursorColor = PrimaryGreen,
+                                focusedTextColor = PrimaryGreen,
+                                unfocusedTextColor = TextBlack,
+                                focusedContainerColor = LightPrimaryGreen,
+                                unfocusedContainerColor = LightPrimaryGreen
+                            )
                         )
                     }
                 },
@@ -504,19 +547,22 @@ fun HikeDetailScreen(
                             observationViewModel.addObservation(observation)
 
                             Toast.makeText(context, "Observation added!", Toast.LENGTH_SHORT).show()
+                            resetObservationForm()
                         }
                     ) {
                         Text("Save", color = PrimaryGreen)
                     }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showAddObservationDialog = false }) {
+                    TextButton(onClick = {
+                        showAddObservationDialog = false
+                        resetObservationForm()
+                    }) {
                         Text("Cancel", color = TextBlack)
                     }
                 }
             )
         }
-
 
     }
 }
