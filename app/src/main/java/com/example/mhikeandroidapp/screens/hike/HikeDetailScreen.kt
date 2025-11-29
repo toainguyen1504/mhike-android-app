@@ -73,9 +73,14 @@ fun HikeDetailScreen(
     // state open add observation dialog
     var showAddObservationDialog by remember { mutableStateOf(false) }
 
-    // state mở dialog edit
+    // state open edit observation dialog
     var showEditObservationDialog by remember { mutableStateOf(false) }
     var editingObservation by remember { mutableStateOf<ObservationModel?>(null) }
+
+    // state confirm delete dialog
+    var showDeleteObservationDialog by remember { mutableStateOf(false) }
+    var deletingObservation by remember { mutableStateOf<ObservationModel?>(null) }
+
 
     // init observation
     var observationText by remember { mutableStateOf("") }
@@ -405,7 +410,12 @@ fun HikeDetailScreen(
                                     modifier = Modifier.size(20.dp)
                                 )
                             }
-                            IconButton(onClick = { /* TODO: delete observation */ }) {
+
+                            // Delete observation
+                            IconButton(onClick = {
+                                deletingObservation = obs
+                                showDeleteObservationDialog = true
+                            }) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.delete_icon),
                                     contentDescription = "Delete Observation",
@@ -737,6 +747,52 @@ fun HikeDetailScreen(
                         showEditObservationDialog = false
                         resetObservationForm()
                         editingObservation = null
+                    }) {
+                        Text("Cancel", color = TextBlack)
+                    }
+                }
+            )
+        }
+
+        // AlertDialog confirm delete for observation
+        if (showDeleteObservationDialog && deletingObservation != null) {
+            AlertDialog(
+                onDismissRequest = {
+                    showDeleteObservationDialog = false
+                    deletingObservation = null
+                },
+                title = {
+                    Text(
+                        "Confirm Delete Observation",
+                        color = ErrorRed,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                },
+                text = {
+                    Text(
+                        "Are you sure you want to delete this observation?",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showDeleteObservationDialog = false
+                            deletingObservation?.let {
+                                observationViewModel.deleteObservation(it)
+                                Toast.makeText(context, "Observation deleted!", Toast.LENGTH_SHORT).show()
+                            }
+                            deletingObservation = null
+                        }
+                    ) {
+                        Text("OK", color = ErrorRed)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        showDeleteObservationDialog = false
+                        deletingObservation = null
                     }) {
                         Text("Cancel", color = TextBlack)
                     }
