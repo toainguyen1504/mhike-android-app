@@ -228,7 +228,7 @@ fun AddHikeScreen(
                                 Box(
                                     modifier = Modifier
                                         .matchParentSize()
-                                        .background(Color.Black.copy(alpha = 0.3f)) // lớp phủ đen nhẹ
+                                        .background(Color.Black.copy(alpha = 0.4f)) // lớp phủ đen nhẹ
                                 )
                             }
 
@@ -237,8 +237,8 @@ fun AddHikeScreen(
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = Color.White,
                                 modifier = Modifier
-                                    .background(Color.Black.copy(alpha = 0.5f))
-                                    .padding(8.dp)
+                                    .background(Color.Black.copy(alpha = 0.6f))
+                                    .padding(12.dp)
                             )
                         }
 
@@ -346,6 +346,7 @@ fun AddHikeScreen(
                                     true -> "Yes"
                                     false -> "No"
                                 },
+                                label = { Text("Parking available *") },
                                 onValueChange = {},
                                 readOnly = true,
                                 isError = parkingError,
@@ -353,7 +354,7 @@ fun AddHikeScreen(
                                 modifier = Modifier.menuAnchor().fillMaxWidth(),
                                 textStyle = MaterialTheme.typography.bodyLarge.copy(
                                     color = if (parkingError && parking == null) ErrorRed
-                                    else MaterialTheme.colorScheme.onSurface
+                                    else TextSecondary
                                 ),
                                 colors = if (parkingError) {
                                     TextFieldDefaults.colors(
@@ -382,7 +383,7 @@ fun AddHikeScreen(
                                 }
                             }
                         }
-
+                        Spacer(modifier = Modifier.height(8.dp))
                     }
 
                     // Lenght
@@ -417,6 +418,7 @@ fun AddHikeScreen(
                         ) {
                             OutlinedTextField(
                                 value = if (difficulty.isBlank()) "Choose difficulty *" else difficulty,
+                                label = { Text("Level of difficulty *") },
                                 onValueChange = {},
                                 readOnly = true,
                                 isError = difficultyError,
@@ -428,7 +430,7 @@ fun AddHikeScreen(
                                     .fillMaxWidth(),
                                 textStyle = MaterialTheme.typography.bodyLarge.copy(
                                     color = if (difficultyError && difficulty.isBlank()) ErrorRed
-                                    else MaterialTheme.colorScheme.onSurface
+                                    else TextSecondary
                                 ),
                                 colors = if (difficultyError) {
                                     TextFieldDefaults.colors(
@@ -440,7 +442,6 @@ fun AddHikeScreen(
                                     )
                                 } else inputColors
                             )
-
 
                             ExposedDropdownMenu(
                                 expanded = expanded,
@@ -457,7 +458,6 @@ fun AddHikeScreen(
                                 }
                             }
                         }
-
                         Spacer(modifier = Modifier.height(8.dp))
                     }
 

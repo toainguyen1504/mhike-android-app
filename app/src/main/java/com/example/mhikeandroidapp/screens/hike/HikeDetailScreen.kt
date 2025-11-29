@@ -134,8 +134,8 @@ fun HikeDetailScreen(
                             },
                             contentDescription = "Hike Image",
                             modifier = Modifier
-                                .width(160.dp)
-                                .height(100.dp)
+                                .width(200.dp)
+                                .height(120.dp)
                                 .clip(RoundedCornerShape(8.dp)),
                             contentScale = ContentScale.Crop
                         )
