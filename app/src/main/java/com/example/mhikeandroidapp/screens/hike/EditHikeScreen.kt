@@ -1,7 +1,6 @@
 package com.example.mhikeandroidapp.screens.hike
 
 import android.app.DatePickerDialog
-import android.content.Intent
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -20,7 +19,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -45,22 +43,25 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddHikeScreen(
+fun EditHikeScreen(
+    hike: HikeModel, // hike data
     onBack: () -> Unit,
     onSave: (HikeModel) -> Unit
 ) {
     val LightPrimaryGreen = PrimaryGreen.copy(alpha = 0.1f)
     val context = LocalContext.current
 
-    var name by remember { mutableStateOf("") }
-    var location by remember { mutableStateOf("") }
-    var dateMs by remember { mutableStateOf(System.currentTimeMillis()) }
-    var parking: Boolean? by remember { mutableStateOf(null) }
-    var lengthKm by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var duration by remember { mutableStateOf("") }
-    var groupSize by remember { mutableStateOf("") }
-    var imageUri by remember { mutableStateOf("") }
+    // Khởi tạo state từ dữ liệu hike
+    var name by remember { mutableStateOf(hike.name) }
+    var location by remember { mutableStateOf(hike.location) }
+    var dateMs by remember { mutableStateOf(hike.dateMs) }
+    var parking: Boolean? by remember { mutableStateOf(hike.parking) }
+    var lengthKm by remember { mutableStateOf(hike.plannedLengthKm.toString()) }
+    var description by remember { mutableStateOf(hike.description ?: "") }
+    var duration by remember { mutableStateOf(hike.estimatedDurationMinutes?.toString() ?: "") }
+    var groupSize by remember { mutableStateOf(hike.groupSize?.toString() ?: "") }
+    var imageUri by remember { mutableStateOf(hike.imageUri ?: "") }
+    var difficulty by remember { mutableStateOf(hike.difficulty) }
 
     // thumbnail hike
     val imagePickerLauncher = rememberLauncherForActivityResult(
@@ -91,7 +92,6 @@ fun AddHikeScreen(
     // difficulty
     val difficultyOptions = listOf("Easy", "Medium", "Hard")
     var expanded by remember { mutableStateOf(false) }
-    var difficulty by remember { mutableStateOf("") }
 
     // parking
     val parkingOptions = listOf("Yes", "No")
@@ -145,7 +145,7 @@ fun AddHikeScreen(
                 },
                 title = {
                     Text(
-                        text = "Add New Hike",
+                        text = "Edit Hike",
                         style = MaterialTheme.typography.displayMedium,
                         color = PrimaryGreen
                     )
@@ -163,18 +163,18 @@ fun AddHikeScreen(
                 .fillMaxWidth()
                 .height(64.dp)
 
-            // Reset init state
+            // Reset init state of hike
             fun resetForm() {
-                name = ""
-                location = ""
-                dateMs = System.currentTimeMillis()
-                parking = null
-                lengthKm = ""
-                description = ""
-                duration = ""
-                groupSize = ""
-                imageUri = ""
-                difficulty = ""
+                name = hike.name
+                location = hike.location
+                dateMs = hike.dateMs
+                parking = hike.parking
+                lengthKm = hike.plannedLengthKm.toString()
+                description = hike.description ?: ""
+                duration = hike.estimatedDurationMinutes?.toString() ?: ""
+                groupSize = hike.groupSize?.toString() ?: ""
+                imageUri = hike.imageUri ?: ""
+                difficulty = hike.difficulty
             }
 
             val inputColors = TextFieldDefaults.colors(
@@ -540,7 +540,7 @@ fun AddHikeScreen(
                             return@Button
                         }
 
-                        val hike = HikeModel(
+                        val updatedHike = hike.copy(
                             name = name,
                             location = location,
                             dateMs = dateMs,
@@ -552,10 +552,11 @@ fun AddHikeScreen(
                             groupSize = groupSize.toIntOrNull(),
                             imageUri = imageUri
                         )
-                        onSave(hike)
+
+                        onSave(updatedHike)
 
                         // Successfully message
-                        Toast.makeText(context, "Hike added successfully!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Hike updated successfully!", Toast.LENGTH_SHORT).show()
                     },
                     modifier = Modifier
                         .weight(0.6f)
@@ -565,7 +566,7 @@ fun AddHikeScreen(
                         contentColor = Color.White
                     )
                 ) {
-                    Text("Add Hike")
+                    Text("Update Hike")
                 }
             }
 

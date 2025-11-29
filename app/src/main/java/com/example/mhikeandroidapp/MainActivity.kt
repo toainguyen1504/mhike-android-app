@@ -25,6 +25,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.mhikeandroidapp.data.hike.HikeModel
 import com.example.mhikeandroidapp.screens.hike.AddHikeScreen
+import com.example.mhikeandroidapp.screens.hike.EditHikeScreen
 import com.example.mhikeandroidapp.screens.hike.HikeDetailScreen
 import com.example.mhikeandroidapp.ui.theme.PrimaryGreen
 
@@ -97,7 +98,9 @@ class MainActivity : ComponentActivity() {
                             hike?.let {
                                 HikeDetailScreen(
                                     hike = it,
-                                    onEdit = { /* TODO: edit */ },
+                                    onEdit = {
+                                        navController.navigate("edit_hike/${it.id}")
+                                    },
                                     onDelete = {
                                         hikeViewModel.deleteHike(it)
                                         navController.popBackStack()
@@ -106,6 +109,30 @@ class MainActivity : ComponentActivity() {
                                     onBack = { navController.popBackStack() }
                                 )
                             }
+                        }
+                    }
+
+                    //Edit Hike screen
+                    composable("edit_hike/{hikeId}") { backStackEntry ->
+                        val hikeId = backStackEntry.arguments?.getString("hikeId")?.toLongOrNull()
+
+                        val hike by produceState<HikeModel?>(initialValue = null, hikeId) {
+                            value = hikeId?.let { hikeViewModel.getHikeById(it) }
+                        }
+
+                        if (hike == null) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator(color = PrimaryGreen)
+                            }
+                        } else {
+                            EditHikeScreen(
+                                hike = hike!!,
+                                onBack = { navController.popBackStack() },
+                                onSave = { updated ->
+                                    hikeViewModel.updateHike(updated)
+                                    navController.popBackStack()
+                                }
+                            )
                         }
                     }
                 }

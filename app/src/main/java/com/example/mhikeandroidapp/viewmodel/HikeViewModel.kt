@@ -26,6 +26,11 @@ class HikeViewModel(private val repository: HikeRepository) : ViewModel() {
         return repository.getHikeById(id)
     }
 
+    fun updateHike(hike: HikeModel) {
+        viewModelScope.launch {
+            repository.updateHike(hike)
+        }
+    }
 
     fun deleteHike(hike: HikeModel) {
         viewModelScope.launch {
