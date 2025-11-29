@@ -3,6 +3,7 @@ package com.example.mhikeandroidapp.screens.hike
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -43,18 +44,46 @@ fun HikeDetailScreen(
     hike: HikeModel,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
-    onAddObservation: () -> Unit
+    onAddObservation: () -> Unit,
+    onBack: () -> Unit   // callback back
 ) {
-    val LightPrimaryGreen = PrimaryGreen.copy(alpha = 0.1f)
+    val LightPrimaryGreen = PrimaryGreen.copy(alpha = 0.2f)
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            CenterAlignedTopAppBar(
+                navigationIcon = {
+                    Box(
+                        modifier = Modifier
+                            .padding(start = 8.dp)
+                            .clip(RoundedCornerShape(50))
+                            .clickable(onClick = onBack)
+                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.back_icon),
+                                contentDescription = "Back",
+                                tint = TextBlack,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(2.dp))
+                            Text(
+                                text = "Back",
+                                color = TextBlack,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
+                    }
+                },
                 title = {
                     Text(
                         text = "Hike Details",
-                        style = MaterialTheme.typography.displayLarge,
-                        color = PrimaryGreen
+                        style = MaterialTheme.typography.displayMedium,
+                        color = PrimaryGreen,
+
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -113,38 +142,38 @@ fun HikeDetailScreen(
                             )
                             Spacer(modifier = Modifier.height(12.dp))
 
-                            Text("Location: ${hike.location}", style = MaterialTheme.typography.bodyMedium, color = TextBlack)
+                            Text("Location: ${hike.location}", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("Date: ${formatDate(hike.dateMs)}", style = MaterialTheme.typography.bodyMedium, color = TextBlack)
+                            Text("Date: ${formatDate(hike.dateMs)}", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("Parking: ${if (hike.parking) "Yes" else "No"}", style = MaterialTheme.typography.bodyMedium, color = TextBlack)
+                            Text("Parking: ${if (hike.parking) "Yes" else "No"}", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("Length: ${hike.plannedLengthKm} km", style = MaterialTheme.typography.bodyMedium, color = TextBlack)
+                            Text("Length: ${hike.plannedLengthKm} km", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("Difficulty: ${hike.difficulty}", style = MaterialTheme.typography.bodyMedium, color = TextBlack)
+                            Text("Difficulty: ${hike.difficulty}", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
                             Spacer(modifier = Modifier.height(8.dp))
                             hike.description?.let {
-                                Text("Description: $it", style = MaterialTheme.typography.bodyMedium, color = TextBlack)
+                                Text("Description: $it", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
                             }
                             Spacer(modifier = Modifier.height(8.dp))
                             hike.estimatedDurationMinutes?.let {
-                                Text("Duration: $it minutes", style = MaterialTheme.typography.bodyMedium, color = TextBlack)
+                                Text("Duration: $it minutes", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
                             }
                             Spacer(modifier = Modifier.height(8.dp))
                             hike.groupSize?.let {
-                                Text("Group Size: $it", style = MaterialTheme.typography.bodyMedium, color = TextBlack)
+                                Text("Group Size: $it", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
                             }
                             Spacer(modifier = Modifier.height(8.dp))
                             hike.latitude?.let {
-                                Text("Latitude: $it", style = MaterialTheme.typography.bodyMedium, color = TextBlack)
+                                Text("Latitude: $it", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
                             }
                             Spacer(modifier = Modifier.height(8.dp))
                             hike.longitude?.let {
-                                Text("Longitude: $it", style = MaterialTheme.typography.bodyMedium, color = TextBlack)
+                                Text("Longitude: $it", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
                             }
                             Spacer(modifier = Modifier.height(8.dp))
                             hike.reminderMs?.let {
-                                Text("Reminder: ${formatDate(it)}", style = MaterialTheme.typography.bodyMedium, color = TextBlack)
+                                Text("Reminder: ${formatDate(it)}", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
                             }
                         }
 

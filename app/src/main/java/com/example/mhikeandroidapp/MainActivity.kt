@@ -3,9 +3,12 @@ package com.example.mhikeandroidapp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowInsetsControllerCompat
@@ -23,6 +26,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.mhikeandroidapp.data.hike.HikeModel
 import com.example.mhikeandroidapp.screens.hike.AddHikeScreen
 import com.example.mhikeandroidapp.screens.hike.HikeDetailScreen
+import com.example.mhikeandroidapp.ui.theme.PrimaryGreen
 
 class MainActivity : ComponentActivity() {
 
@@ -80,25 +84,30 @@ class MainActivity : ComponentActivity() {
                     // hike detail screen by id
                     composable("hike_detail/{hikeId}") { backStackEntry ->
                         val hikeId = backStackEntry.arguments?.getString("hikeId")?.toLongOrNull()
-                        val hikeViewModel: HikeViewModel = viewModel(factory = factory)
 
                         val hike by produceState<HikeModel?>(initialValue = null, hikeId) {
                             value = hikeId?.let { hikeViewModel.getHikeById(it) }
                         }
 
-                        hike?.let {
-                            HikeDetailScreen(
-                                hike = it,
-                                onEdit = { /* TODO: edit */ },
-                                onDelete = {
-                                    hikeViewModel.deleteHike(it)
-                                    navController.popBackStack()
-                                },
-                                onAddObservation = { /* TODO: add observation */ }
-                            )
+                        if (hike == null) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator(color = PrimaryGreen)
+                            }
+                        } else {
+                            hike?.let {
+                                HikeDetailScreen(
+                                    hike = it,
+                                    onEdit = { /* TODO: edit */ },
+                                    onDelete = {
+                                        hikeViewModel.deleteHike(it)
+                                        navController.popBackStack()
+                                    },
+                                    onAddObservation = { /* TODO: add observation */ },
+                                    onBack = { navController.popBackStack() }
+                                )
+                            }
                         }
                     }
-
                 }
             }
         }

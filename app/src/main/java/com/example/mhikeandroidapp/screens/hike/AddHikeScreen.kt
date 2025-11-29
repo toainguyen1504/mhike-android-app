@@ -116,12 +116,65 @@ fun AddHikeScreen(
     }
 
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                navigationIcon = {
+                    Box(
+                        modifier = Modifier
+                            .padding(start = 8.dp)
+                            .clip(RoundedCornerShape(50))
+                            .clickable(onClick = onBack)
+                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.back_icon),
+                                contentDescription = "Back",
+                                tint = TextBlack,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(2.dp))
+                            Text(
+                                text = "Back",
+                                color = TextBlack,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
+                    }
+                },
+                title = {
+                    Text(
+                        text = "Add New Hike",
+                        style = MaterialTheme.typography.displayMedium,
+                        color = PrimaryGreen
+                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = PrimaryGreen
+                )
+            )
+        }
+    ) { innerPadding ->
+        Column(modifier = Modifier.fillMaxSize().padding(innerPadding).padding(16.dp)) {
 
             fun Modifier.inputModifier() = this
                 .fillMaxWidth()
                 .height(64.dp)
+
+            fun resetForm() {
+                name = ""
+                location = ""
+                dateMs = System.currentTimeMillis()
+                parking = null
+                lengthKm = ""
+                description = ""
+                duration = ""
+                groupSize = ""
+                imageUri = ""
+                difficulty = ""
+            }
 
             val inputColors = TextFieldDefaults.colors(
                 focusedIndicatorColor = PrimaryGreen,
@@ -133,16 +186,7 @@ fun AddHikeScreen(
                 unfocusedContainerColor = LightPrimaryGreen
             )
 
-            // Title
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = "Add New Hike",
-                style = MaterialTheme.typography.displayLarge,
-                color = PrimaryGreen
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // scroll
+            // body scroll
             Box(modifier = Modifier.weight(1f)) {
                 LazyColumn(
                     modifier = Modifier
@@ -467,18 +511,18 @@ fun AddHikeScreen(
                     .padding(top = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(24.dp) // khoảng cách giữa nút
             ) {
-                // Back btn — chiếm 40%
+                // Reset form btn — chiếm 40%
                 Button(
-                    onClick = onBack,
+                    onClick = { resetForm() }, // reset form
                     modifier = Modifier
                         .weight(0.4f)
                         .height(50.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = TextSecondary,
+                        containerColor = TextSecondary.copy(alpha = 0.2f),
                         contentColor = TextBlack
                     )
                 ) {
-                    Text("Back")
+                    Text("Reset")
                 }
 
                 // Save btn — chiếm 60%
