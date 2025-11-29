@@ -181,8 +181,8 @@ fun EditHikeScreen(
                 focusedIndicatorColor = PrimaryGreen,
                 unfocusedIndicatorColor = Color.Transparent,
                 cursorColor = PrimaryGreen,
-                focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                unfocusedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                focusedTextColor = PrimaryGreen,
+                unfocusedTextColor = TextBlack,
                 focusedContainerColor = LightPrimaryGreen,
                 unfocusedContainerColor = LightPrimaryGreen
             )
@@ -342,7 +342,7 @@ fun EditHikeScreen(
                         ) {
                             OutlinedTextField(
                                 value = when (parking) {
-                                    null -> "Choose parking available *"
+                                    null -> ""
                                     true -> "Yes"
                                     false -> "No"
                                 },
@@ -354,7 +354,7 @@ fun EditHikeScreen(
                                 modifier = Modifier.menuAnchor().fillMaxWidth(),
                                 textStyle = MaterialTheme.typography.bodyLarge.copy(
                                     color = if (parkingError && parking == null) ErrorRed
-                                    else TextSecondary
+                                    else TextBlack
                                 ),
                                 colors = if (parkingError) {
                                     TextFieldDefaults.colors(
@@ -417,7 +417,7 @@ fun EditHikeScreen(
                             onExpandedChange = { expanded = !expanded }
                         ) {
                             OutlinedTextField(
-                                value = if (difficulty.isBlank()) "Choose difficulty *" else difficulty,
+                                value = if (difficulty.isBlank()) "" else difficulty,
                                 label = { Text("Level of difficulty *") },
                                 onValueChange = {},
                                 readOnly = true,
@@ -430,7 +430,7 @@ fun EditHikeScreen(
                                     .fillMaxWidth(),
                                 textStyle = MaterialTheme.typography.bodyLarge.copy(
                                     color = if (difficultyError && difficulty.isBlank()) ErrorRed
-                                    else TextSecondary
+                                    else TextBlack
                                 ),
                                 colors = if (difficultyError) {
                                     TextFieldDefaults.colors(
@@ -479,7 +479,7 @@ fun EditHikeScreen(
                         OutlinedTextField(
                             value = duration,
                             onValueChange = { duration = it },
-                            label = { Text("Estimated Duration (minutes)") },
+                            label = { Text("Estimated duration (minutes)") },
                             modifier = Modifier.inputModifier(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             colors = inputColors
@@ -492,7 +492,7 @@ fun EditHikeScreen(
                         OutlinedTextField(
                             value = groupSize,
                             onValueChange = { groupSize = it },
-                            label = { Text("Group Size") },
+                            label = { Text("Group size") },
                             modifier = Modifier.inputModifier(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             colors = inputColors
@@ -508,9 +508,9 @@ fun EditHikeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(24.dp) // khoảng cách giữa nút
+                horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                // Reset form btn — chiếm 40%
+                // Reset form btn - 40%
                 Button(
                     onClick = { resetForm() }, // reset form
                     modifier = Modifier
@@ -524,7 +524,7 @@ fun EditHikeScreen(
                     Text("Reset")
                 }
 
-                // Save btn — chiếm 60%
+                // Save btn - 60%
                 Button(
                     onClick = {
                         val valid = isValid()
