@@ -26,6 +26,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
@@ -123,6 +124,21 @@ fun HikeDetailScreen(
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
+            }
+        }
+    )
+
+    // capture image when add observation
+    val photoFile = remember {
+        File(context.filesDir, "obs_${System.currentTimeMillis()}.jpg")
+    }
+    val photoUri = FileProvider.getUriForFile(context, "${context.packageName}.provider", photoFile)
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture(),
+        onResult = { success ->
+            if (success) {
+                imageObservationUri = photoFile.absolutePath
             }
         }
     )
@@ -520,14 +536,30 @@ fun HikeDetailScreen(
                                 )
                             }
 
-                            Text(
-                                text = "Choose Image",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color.White,
-                                modifier = Modifier
-                                    .background(Color.Black.copy(alpha = 0.6f))
-                                    .padding(12.dp)
-                            )
+                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                Button(
+                                    onClick = {
+                                        imagePickerLauncher.launch(
+                                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                        )
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = AccentBlue.copy(alpha = 0.6f)),
+                                    modifier = Modifier
+                                        .weight(1f)
+                                ) {
+                                    Text("Choose Image")
+                                }
+
+                                Button(
+                                    onClick = {
+                                        cameraLauncher.launch(photoUri)
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = TextBlack.copy(alpha = 0.6f)),
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text("Take a picture")
+                                }
+                            }
                         }
 
                         // Observation Text (required)
