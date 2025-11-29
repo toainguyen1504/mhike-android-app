@@ -536,18 +536,25 @@ fun HikeDetailScreen(
                                 )
                             }
 
-                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                modifier = Modifier.padding(horizontal = 4.dp)
+                            ) {
                                 Button(
                                     onClick = {
                                         imagePickerLauncher.launch(
                                             PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                                         )
                                     },
-                                    colors = ButtonDefaults.buttonColors(containerColor = AccentBlue.copy(alpha = 0.6f)),
+                                    colors = ButtonDefaults.buttonColors(containerColor = SecondaryBrown.copy(alpha = 0.6f)),
                                     modifier = Modifier
                                         .weight(1f)
                                 ) {
-                                    Text("Choose Image")
+                                    Text(
+                                        "Choose Image",
+                                        modifier = Modifier.fillMaxWidth(),
+                                        textAlign = TextAlign.Center
+                                    )
                                 }
 
                                 Button(
@@ -557,7 +564,11 @@ fun HikeDetailScreen(
                                     colors = ButtonDefaults.buttonColors(containerColor = TextBlack.copy(alpha = 0.6f)),
                                     modifier = Modifier.weight(1f)
                                 ) {
-                                    Text("Take a picture")
+                                    Text(
+                                        "Take a picture",
+                                        modifier = Modifier.fillMaxWidth(),
+                                        textAlign = TextAlign.Center
+                                    )
                                 }
                             }
                         }
@@ -614,23 +625,29 @@ fun HikeDetailScreen(
                 confirmButton = {
                     TextButton(
                         onClick = {
-                            showAddObservationDialog = false
-                            val observation = ObservationModel(
-                                hikeId = hike.id,
-                                observationText = observationText,
-                                timeMs = System.currentTimeMillis(),
-                                comments = comments.ifBlank { null },
-                                imageObservationUri = imageObservationUri.ifBlank { null }
-                            )
+                            if (observationText.isBlank()) {
+                                // báo lỗi
+                                observationError = true
+                                Toast.makeText(context, "Observation text is required!", Toast.LENGTH_SHORT).show()
+                            } else {
+                                showAddObservationDialog = false
+                                val observation = ObservationModel(
+                                    hikeId = hike.id,
+                                    observationText = observationText,
+                                    timeMs = System.currentTimeMillis(),
+                                    comments = comments.ifBlank { null },
+                                    imageObservationUri = imageObservationUri.ifBlank { null }
+                                )
 
-                            //save to db
-                            observationViewModel.addObservation(observation)
+                                // save to db
+                                observationViewModel.addObservation(observation)
 
-                            Toast.makeText(context, "Observation added!", Toast.LENGTH_SHORT).show()
-                            resetObservationForm()
+                                Toast.makeText(context, "Observation added!", Toast.LENGTH_SHORT).show()
+                                resetObservationForm()
+                            }
                         }
                     ) {
-                        Text("Save", color = PrimaryGreen)
+                        Text("Save", color = PrimaryGreen,  style = MaterialTheme.typography.titleMedium )
                     }
                 },
                 dismissButton = {
@@ -693,14 +710,41 @@ fun HikeDetailScreen(
                                 )
                             }
 
-                            Text(
-                                text = "Choose Image",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color.White,
-                                modifier = Modifier
-                                    .background(Color.Black.copy(alpha = 0.6f))
-                                    .padding(12.dp)
-                            )
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                modifier = Modifier.padding(horizontal = 4.dp)
+                            ) {
+                                Button(
+                                    onClick = {
+                                        imagePickerLauncher.launch(
+                                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                        )
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = SecondaryBrown.copy(alpha = 0.6f)),
+                                    modifier = Modifier
+                                        .weight(1f)
+                                ) {
+                                    Text(
+                                        "Choose Image",
+                                        modifier = Modifier.fillMaxWidth(),
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+
+                                Button(
+                                    onClick = {
+                                        cameraLauncher.launch(photoUri)
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = TextBlack.copy(alpha = 0.6f)),
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(
+                                        "Take a picture",
+                                        modifier = Modifier.fillMaxWidth(),
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
                         }
 
                         // Observation Text (required)
@@ -757,6 +801,7 @@ fun HikeDetailScreen(
                         onClick = {
                             if (observationText.isBlank()) {
                                 observationError = true
+                                Toast.makeText(context, "Observation text is required!", Toast.LENGTH_SHORT).show()
                             } else {
                                 showEditObservationDialog = false
                                 val updated = editingObservation!!.copy(
@@ -765,13 +810,14 @@ fun HikeDetailScreen(
                                     imageObservationUri = imageObservationUri.ifBlank { null }
                                 )
                                 observationViewModel.updateObservation(updated)
+
                                 Toast.makeText(context, "Observation updated!", Toast.LENGTH_SHORT).show()
                                 resetObservationForm()
                                 editingObservation = null
                             }
                         }
                     ) {
-                        Text("Save", color = PrimaryGreen)
+                        Text("Save", color = PrimaryGreen, style = MaterialTheme.typography.titleMedium )
                     }
                 },
                 dismissButton = {
