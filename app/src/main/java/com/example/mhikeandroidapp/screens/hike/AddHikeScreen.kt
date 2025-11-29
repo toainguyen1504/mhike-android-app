@@ -291,11 +291,9 @@ fun AddHikeScreen(
                     // Date
                     item {
                         val dateFormatter = remember {
-                            SimpleDateFormat(
-                                "dd MMM yyyy",
-                                Locale.getDefault()
-                            )
+                            SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH)
                         }
+
                         val calendar = remember { Calendar.getInstance() }
                         calendar.timeInMillis = dateMs
 
@@ -554,6 +552,9 @@ fun AddHikeScreen(
                             imageUri = imageUri
                         )
                         onSave(hike)
+
+                        // Successfully message
+                        Toast.makeText(context, "Hike added successfully!", Toast.LENGTH_SHORT).show()
                     },
                     modifier = Modifier
                         .weight(0.6f)

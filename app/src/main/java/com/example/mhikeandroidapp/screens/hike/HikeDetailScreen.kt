@@ -49,6 +49,10 @@ fun HikeDetailScreen(
 ) {
     val LightPrimaryGreen = PrimaryGreen.copy(alpha = 0.2f)
 
+    val dateFormatter = remember {
+        SimpleDateFormat("MMM dd, yyyy", Locale.US)
+    }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -144,39 +148,48 @@ fun HikeDetailScreen(
 
                             Text("Location: ${hike.location}", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("Date: ${formatDate(hike.dateMs)}", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
+
+                            Text("Date: ${dateFormatter.format(Date(hike.dateMs))}", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
                             Spacer(modifier = Modifier.height(8.dp))
+
                             Text("Parking: ${if (hike.parking) "Yes" else "No"}", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
                             Spacer(modifier = Modifier.height(8.dp))
+
                             Text("Length: ${hike.plannedLengthKm} km", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
                             Spacer(modifier = Modifier.height(8.dp))
+
                             Text("Difficulty: ${hike.difficulty}", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
                             Spacer(modifier = Modifier.height(8.dp))
+
                             hike.description?.let {
                                 Text("Description: $it", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
                             }
                             Spacer(modifier = Modifier.height(8.dp))
+
                             hike.estimatedDurationMinutes?.let {
                                 Text("Duration: $it minutes", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
                             }
                             Spacer(modifier = Modifier.height(8.dp))
+
                             hike.groupSize?.let {
                                 Text("Group Size: $it", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
                             }
                             Spacer(modifier = Modifier.height(8.dp))
+
                             hike.latitude?.let {
                                 Text("Latitude: $it", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
                             }
                             Spacer(modifier = Modifier.height(8.dp))
+
                             hike.longitude?.let {
                                 Text("Longitude: $it", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
                             }
                             Spacer(modifier = Modifier.height(8.dp))
+
                             hike.reminderMs?.let {
                                 Text("Reminder: ${formatDate(it)}", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
                             }
                         }
-
                         Spacer(modifier = Modifier.height(8.dp))
 
                         // Buttons
@@ -215,18 +228,19 @@ fun HikeDetailScreen(
                     Text("Observation", style = MaterialTheme.typography.titleMedium, color = HighlightsGreen)
 
                     // Add Observation Button
-                    IconButton(
-                        onClick = onAddObservation,
+                    Box(
                         modifier = Modifier
-                            .size(52.dp)
+                            .size(50.dp)
                             .clip(CircleShape)
                             .background(HighlightsGreen)
+                            .clickable { onAddObservation() },
+                        contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.plus_icon),
                             contentDescription = "Add Observation",
                             tint = Color.White,
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(18.dp)
                         )
                     }
                 }

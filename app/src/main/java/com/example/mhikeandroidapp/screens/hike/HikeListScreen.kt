@@ -144,8 +144,7 @@ fun HikeListScreen(
         }
 
         // Floating Add Hike Button
-        IconButton(
-            onClick = { navController.navigate("add_hike") },
+        Box(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(end = 24.dp, bottom = 72.dp)
@@ -153,6 +152,8 @@ fun HikeListScreen(
                 .shadow(8.dp, CircleShape, clip = false)
                 .clip(CircleShape)
                 .background(HighlightsGreen)
+                .clickable { navController.navigate("add_hike") },
+            contentAlignment = Alignment.Center
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.plus_icon),
@@ -187,6 +188,11 @@ fun HikeItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             val context = LocalContext.current
+
+            val dateFormatter = remember {
+                SimpleDateFormat("MMM dd, yyyy", Locale.US)
+            }
+
             val imageRequest = if (!hike.imageUri.isNullOrBlank()) {
                 ImageRequest.Builder(context)
                     .data(File(hike.imageUri))
@@ -200,6 +206,7 @@ fun HikeItem(
                     .build()
             }
 
+            // Thumbnail
             AsyncImage(
                 model = imageRequest,
                 contentDescription = "Hike Image",
@@ -211,6 +218,7 @@ fun HikeItem(
             )
             Spacer(modifier = Modifier.width(12.dp))
 
+            // Hike info
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = hike.name,
@@ -219,7 +227,6 @@ fun HikeItem(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-
                 Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
@@ -229,11 +236,10 @@ fun HikeItem(
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
-
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = formatDate(hike.dateMs),
+                    text = dateFormatter.format(Date(hike.dateMs)),
                     style = MaterialTheme.typography.labelSmall,
                     color = TextSecondary
                 )
@@ -261,7 +267,7 @@ fun HikeItem(
                         text = {
                             Text(
                                 "Edit",
-                                color = AccentBlue // màu xanh bạn định nghĩa trong theme
+                                color = AccentBlue
                             )
                         },
                         onClick = {
@@ -273,7 +279,7 @@ fun HikeItem(
                         text = {
                             Text(
                                 "Delete",
-                                color = ErrorRed // màu đỏ bạn định nghĩa trong theme
+                                color = ErrorRed
                             )
                         },
                         onClick = {
