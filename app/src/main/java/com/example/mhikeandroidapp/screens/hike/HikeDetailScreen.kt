@@ -1,5 +1,6 @@
 package com.example.mhikeandroidapp.screens.hike
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -16,6 +17,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -47,11 +49,16 @@ fun HikeDetailScreen(
     onAddObservation: () -> Unit,
     onBack: () -> Unit   // callback back
 ) {
+    val context = LocalContext.current
     val LightPrimaryGreen = PrimaryGreen.copy(alpha = 0.2f)
 
+    // utils
     val dateFormatter = remember {
         SimpleDateFormat("MMM dd, yyyy", Locale.US)
     }
+
+    // state open confirm dialog
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -205,7 +212,7 @@ fun HikeDetailScreen(
                                 Text("Edit")
                             }
                             Button(
-                                onClick = onDelete,
+                                onClick = { showDeleteDialog = true },
                                 modifier = Modifier.weight(1f),
                                 colors = ButtonDefaults.buttonColors(containerColor = ErrorRed)
                             ) {
@@ -262,12 +269,49 @@ fun HikeDetailScreen(
             }
 
             item {
-                Spacer(modifier = Modifier.height(500.dp)) // thêm margin bottom để test cuộn
+                Spacer(modifier = Modifier.height(500.dp)) // add margin bottom to test SCROLL
             }
         }
+
+        // AlertDialog confirm delete
+        if (showDeleteDialog) {
+            AlertDialog(
+                onDismissRequest = { showDeleteDialog = false },
+                title = {
+                    Text(
+                        "Confirm Delete",
+                        color = ErrorRed,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                },
+                text = {
+                    Text(
+                        "Are you sure you want to delete this hike?",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showDeleteDialog = false
+                            onDelete() // delete
+
+                            // successfully message
+                            Toast.makeText(context, "Hike deleted successfully!", Toast.LENGTH_SHORT).show()
+                        }
+                    ) {
+                        Text("OK", color = ErrorRed)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDeleteDialog = false }) {
+                        Text("Cancel", color = TextBlack)
+                    }
+                }
+            )
+        }
+
     }
-
-
-
 }
 
