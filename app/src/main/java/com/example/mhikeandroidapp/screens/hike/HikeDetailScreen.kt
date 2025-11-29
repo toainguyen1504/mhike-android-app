@@ -73,6 +73,10 @@ fun HikeDetailScreen(
     // state open add observation dialog
     var showAddObservationDialog by remember { mutableStateOf(false) }
 
+    // state mở dialog edit
+    var showEditObservationDialog by remember { mutableStateOf(false) }
+    var editingObservation by remember { mutableStateOf<ObservationModel?>(null) }
+
     // init observation
     var observationText by remember { mutableStateOf("") }
     var comments by remember { mutableStateOf("") }
@@ -170,6 +174,7 @@ fun HikeDetailScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+
             item {
                 // Hike Info Card
                 Card(
@@ -385,7 +390,14 @@ fun HikeDetailScreen(
                             horizontalAlignment = Alignment.End,
                             verticalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-                            IconButton(onClick = { /* TODO: edit observation */ }) {
+                            IconButton(
+                                onClick = {
+                                    editingObservation = obs
+                                    observationText = obs.observationText
+                                    comments = obs.comments ?: ""
+                                    imageObservationUri = obs.imageObservationUri ?: ""
+                                    showEditObservationDialog = true
+                                }) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.pencil_icon),
                                     contentDescription = "Edit Observation",
@@ -583,6 +595,148 @@ fun HikeDetailScreen(
                     TextButton(onClick = {
                         showAddObservationDialog = false
                         resetObservationForm()
+                    }) {
+                        Text("Cancel", color = TextBlack)
+                    }
+                }
+            )
+        }
+
+        // Edit Observation Dialog
+        if (showEditObservationDialog && editingObservation != null) {
+            AlertDialog(
+                onDismissRequest = {
+                    showEditObservationDialog = false
+                    resetObservationForm()
+                    editingObservation = null
+                },
+                title = {
+                    Text("Edit Observation", style = MaterialTheme.typography.titleMedium, color = PrimaryGreen)
+                },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        // Thumbnail image picker (giống add)
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(180.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color.Gray)
+                                .clickable {
+                                    imagePickerLauncher.launch(
+                                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                    )
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            val isDefaultImage = imageObservationUri.isBlank()
+                            val painter = if (isDefaultImage) {
+                                painterResource(id = R.drawable.default_img)
+                            } else {
+                                rememberAsyncImagePainter(model = imageObservationUri)
+                            }
+
+                            Image(
+                                painter = painter,
+                                contentDescription = "Observation Image",
+                                modifier = Modifier.matchParentSize(),
+                                contentScale = ContentScale.Crop
+                            )
+
+                            if (isDefaultImage) {
+                                Box(
+                                    modifier = Modifier
+                                        .matchParentSize()
+                                        .background(Color.Black.copy(alpha = 0.4f))
+                                )
+                            }
+
+                            Text(
+                                text = "Choose Image",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.White,
+                                modifier = Modifier
+                                    .background(Color.Black.copy(alpha = 0.6f))
+                                    .padding(12.dp)
+                            )
+                        }
+
+                        // Observation Text (required)
+                        OutlinedTextField(
+                            value = observationText,
+                            isError = observationError,
+                            onValueChange = {
+                                observationText = it
+                                if (observationError && it.isNotBlank()) observationError = false
+                            },
+                            label = { Text("Observation *") },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = if (observationError) {
+                                TextFieldDefaults.colors(
+                                    focusedIndicatorColor = ErrorRed,
+                                    unfocusedIndicatorColor = ErrorRed,
+                                    cursorColor = ErrorRed,
+                                    focusedContainerColor = LightPrimaryGreen,
+                                    unfocusedContainerColor = LightPrimaryGreen
+                                )
+                            } else {
+                                TextFieldDefaults.colors(
+                                    focusedIndicatorColor = PrimaryGreen,
+                                    unfocusedIndicatorColor = Color.Transparent,
+                                    cursorColor = PrimaryGreen,
+                                    focusedTextColor = PrimaryGreen,
+                                    unfocusedTextColor = TextBlack,
+                                    focusedContainerColor = LightPrimaryGreen,
+                                    unfocusedContainerColor = LightPrimaryGreen
+                                )
+                            }
+                        )
+
+                        // Comments
+                        OutlinedTextField(
+                            value = comments,
+                            onValueChange = { comments = it },
+                            label = { Text("Comments here...") },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = TextFieldDefaults.colors(
+                                focusedIndicatorColor = PrimaryGreen,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                cursorColor = PrimaryGreen,
+                                focusedTextColor = PrimaryGreen,
+                                unfocusedTextColor = TextBlack,
+                                focusedContainerColor = LightPrimaryGreen,
+                                unfocusedContainerColor = LightPrimaryGreen
+                            )
+                        )
+                    }
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            if (observationText.isBlank()) {
+                                observationError = true
+                            } else {
+                                showEditObservationDialog = false
+                                val updated = editingObservation!!.copy(
+                                    observationText = observationText,
+                                    comments = comments.ifBlank { null },
+                                    imageObservationUri = imageObservationUri.ifBlank { null }
+                                )
+                                observationViewModel.updateObservation(updated)
+                                Toast.makeText(context, "Observation updated!", Toast.LENGTH_SHORT).show()
+                                resetObservationForm()
+                                editingObservation = null
+                            }
+                        }
+                    ) {
+                        Text("Save", color = PrimaryGreen)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        showEditObservationDialog = false
+                        resetObservationForm()
+                        editingObservation = null
                     }) {
                         Text("Cancel", color = TextBlack)
                     }
