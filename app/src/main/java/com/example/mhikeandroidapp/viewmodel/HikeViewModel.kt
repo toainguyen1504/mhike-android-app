@@ -37,6 +37,13 @@ class HikeViewModel(private val repository: HikeRepository) : ViewModel() {
             repository.deleteHike(hike)
         }
     }
+
+    fun deleteAll() {
+        viewModelScope.launch {
+            repository.deleteAll()
+        }
+    }
+
 }
 
 class HikeViewModelFactory(

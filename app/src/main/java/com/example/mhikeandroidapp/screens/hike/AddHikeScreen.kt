@@ -1,7 +1,6 @@
 package com.example.mhikeandroidapp.screens.hike
 
 import android.app.DatePickerDialog
-import android.content.Intent
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -20,7 +19,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -463,7 +461,6 @@ fun AddHikeScreen(
 
                     // Description
                     item {
-
                         OutlinedTextField(
                             value = description,
                             onValueChange = { description = it },
@@ -568,7 +565,6 @@ fun AddHikeScreen(
                     Text("Add Hike")
                 }
             }
-
 
             Spacer(modifier = Modifier.height(24.dp))
         }

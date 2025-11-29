@@ -443,7 +443,6 @@ fun EditHikeScreen(
                                 } else inputColors
                             )
 
-
                             ExposedDropdownMenu(
                                 expanded = expanded,
                                 onDismissRequest = { expanded = false }
@@ -570,7 +569,6 @@ fun EditHikeScreen(
                     Text("Update Hike")
                 }
             }
-
 
             Spacer(modifier = Modifier.height(24.dp))
         }

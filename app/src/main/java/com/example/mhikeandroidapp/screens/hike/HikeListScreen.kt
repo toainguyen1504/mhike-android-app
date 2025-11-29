@@ -1,6 +1,7 @@
 package com.example.mhikeandroidapp.screens.hike
 
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -31,6 +32,7 @@ import com.example.mhikeandroidapp.ui.theme.AccentBlue
 import com.example.mhikeandroidapp.ui.theme.ErrorRed
 import com.example.mhikeandroidapp.ui.theme.PrimaryGreen
 import com.example.mhikeandroidapp.ui.theme.HighlightsGreen
+import com.example.mhikeandroidapp.ui.theme.TextBlack
 import com.example.mhikeandroidapp.ui.theme.TextSecondary
 import com.example.mhikeandroidapp.viewmodel.HikeViewModel
 import java.io.File
@@ -65,20 +67,70 @@ fun HikeListScreen(
     modifier: Modifier = Modifier,
     navController: NavHostController
 ) {
+    val context = LocalContext.current
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
     val LightPrimaryGreen = PrimaryGreen.copy(alpha = 0.1f)
     val hikes by viewModel.hikes.collectAsState()
+    var showDeleteAllDialog by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
 
             // Header: Title + Search (no scroll)
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = "Hiker Management",
-                style = MaterialTheme.typography.displayLarge,
-                color = PrimaryGreen
-            )
+            // Spacer(modifier = Modifier.height(4.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Hiker Management",
+                    style = MaterialTheme.typography.displayMedium,
+                    color = PrimaryGreen
+                )
+
+                // State open/ close menu
+                var expanded by remember { mutableStateOf(false) }
+
+                Box {
+                    IconButton(onClick = { expanded = true }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.menu_icon),
+                            contentDescription = "Menu",
+                            tint = PrimaryGreen,
+                            modifier = Modifier
+                                .size(40.dp)
+                                .padding(8.dp)
+                        )
+                    }
+
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        // Sync hikes to cloud
+                        DropdownMenuItem(
+                            onClick = {
+                                expanded = false
+                                // TODO: thực thi sync lên cloud
+                            },
+                            text = { Text("Sync all to cloud", color = AccentBlue) },
+                        )
+
+                        // Delete
+                        DropdownMenuItem(
+                            onClick = {
+                                expanded = false
+                                showDeleteAllDialog = true // open dialog confirm
+                            },
+                            text = { Text("Delete all hikes", color = ErrorRed) },
+                        )
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
 
             OutlinedTextField(
@@ -130,8 +182,8 @@ fun HikeListScreen(
                     items(hikes) { hike ->
                         HikeItem(
                             hike = hike,
-                            onEdit = { selected -> /* mở màn hình edit */ },
-                            onDelete = { selected -> viewModel.deleteHike(selected) },
+//                            onEdit = { selected -> /* mở màn hình edit */ },
+//                            onDelete = { selected -> viewModel.deleteHike(selected) },
                             onClick = { selected ->
                                 navController.navigate("hike_detail/${selected.id}")
                             }
@@ -163,13 +215,50 @@ fun HikeListScreen(
             )
         }
     }
+
+    if (showDeleteAllDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteAllDialog = false },
+            title = {
+                Text(
+                    "Confirm Delete All",
+                    color = ErrorRed,
+                    style = MaterialTheme.typography.titleMedium
+                )
+            },
+            text = {
+                Text(
+                    "Are you sure you want to delete ALL hikes?",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteAllDialog = false
+                        // gọi hàm xóa toàn bộ
+                        viewModel.deleteAll()
+
+                        Toast.makeText(context, "All hikes deleted successfully!", Toast.LENGTH_SHORT).show()
+                    }
+                ) {
+                    Text("OK", color = ErrorRed)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteAllDialog = false }) {
+                    Text("Cancel", color = TextBlack)
+                }
+            }
+        )
+    }
+
 }
 
 @Composable
 fun HikeItem(
     hike: HikeModel,
-    onEdit: (HikeModel) -> Unit,
-    onDelete: (HikeModel) -> Unit,
     onClick: (HikeModel) -> Unit
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
@@ -245,51 +334,6 @@ fun HikeItem(
                 )
             }
             Spacer(modifier = Modifier.width(4.dp))
-
-            // action menu: edit and delete
-            Box {
-                IconButton(onClick = { menuExpanded = true }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.menu_dots_vertical_icon),
-                        contentDescription = "Options",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-
-                DropdownMenu(
-                    expanded = menuExpanded,
-                    onDismissRequest = { menuExpanded = false },
-                    modifier = Modifier
-                        .width(180.dp)
-                        .padding(horizontal = 8.dp)
-                ) {
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                "Edit",
-                                color = AccentBlue
-                            )
-                        },
-                        onClick = {
-                            menuExpanded = false
-                            onEdit(hike)
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                "Delete",
-                                color = ErrorRed
-                            )
-                        },
-                        onClick = {
-                            menuExpanded = false
-                            onDelete(hike)
-                        }
-                    )
-                }
-
-            }
         }
     }
 }
