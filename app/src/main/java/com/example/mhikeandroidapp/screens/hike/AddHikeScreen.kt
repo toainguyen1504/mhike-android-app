@@ -35,6 +35,7 @@ import com.example.mhikeandroidapp.ui.theme.TextBlack
 import com.example.mhikeandroidapp.ui.theme.TextSecondary
 import java.io.File
 import java.io.FileOutputStream
+import java.text.Normalizer
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -521,6 +522,13 @@ fun AddHikeScreen(
                     Text("Reset")
                 }
 
+
+                fun normalize(text: String): String {
+                    return Normalizer.normalize(text, Normalizer.Form.NFD)
+                        .replace("\\p{InCombiningDiacriticalMarks}+".toRegex(), "")
+                        .lowercase()
+                }
+
                 // Save btn - 60%
                 Button(
                     onClick = {
@@ -547,7 +555,7 @@ fun AddHikeScreen(
                             description = description.ifBlank { null },
                             estimatedDurationMinutes = duration.toIntOrNull(),
                             groupSize = groupSize.toIntOrNull(),
-                            imageUri = imageUri
+                            imageUri = imageUri,
                         )
                         onSave(hike)
 
@@ -565,10 +573,8 @@ fun AddHikeScreen(
                     Text("Add Hike")
                 }
             }
-
             Spacer(modifier = Modifier.height(24.dp))
         }
-
     }
 }
 

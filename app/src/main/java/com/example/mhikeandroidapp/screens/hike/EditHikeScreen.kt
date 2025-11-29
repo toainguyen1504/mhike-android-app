@@ -540,6 +540,7 @@ fun EditHikeScreen(
                             return@Button
                         }
 
+
                         val updatedHike = hike.copy(
                             name = name,
                             location = location,
@@ -550,7 +551,7 @@ fun EditHikeScreen(
                             description = description.ifBlank { null },
                             estimatedDurationMinutes = duration.toIntOrNull(),
                             groupSize = groupSize.toIntOrNull(),
-                            imageUri = imageUri
+                            imageUri = imageUri,
                         )
 
                         onSave(updatedHike)

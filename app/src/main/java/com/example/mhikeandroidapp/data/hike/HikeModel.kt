@@ -38,5 +38,5 @@ data class HikeModel(
 
     // Meta
     val createdAtMs: Long = System.currentTimeMillis(),
-    val updatedAtMs: Long = System.currentTimeMillis()
+    val updatedAtMs: Long = System.currentTimeMillis(),
 )

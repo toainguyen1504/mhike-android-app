@@ -1,6 +1,5 @@
 package com.example.mhikeandroidapp.screens.hike
 
-import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -36,28 +35,9 @@ import com.example.mhikeandroidapp.ui.theme.TextBlack
 import com.example.mhikeandroidapp.ui.theme.TextSecondary
 import com.example.mhikeandroidapp.viewmodel.HikeViewModel
 import java.io.File
+import java.text.Normalizer
 import java.text.SimpleDateFormat
 import java.util.*
-
-//mock data
-val mockHikes = listOf(
-    HikeModel(
-        id = 1L,
-        name = "Mount Bà Đen Mount Bà Đen Mount Bà Đen",
-        location = "Tây Ninh",
-        dateMs = System.currentTimeMillis(),
-        parking = true,
-        plannedLengthKm = 12.5,
-        difficulty = "Hard",
-        description = "Chuyến leo núi đầy thử thách với cảnh đẹp tuyệt vời. Chuyến leo núi đầy thử thách với cảnh đẹp tuyệt vời.",
-        estimatedDurationMinutes = 240,
-        groupSize = 5,
-        latitude = 11.3602,
-        longitude = 106.1427,
-        imageUri = null,
-        reminderMs = null
-    )
-)
 
 @Composable
 fun HikeListScreen(
@@ -70,14 +50,16 @@ fun HikeListScreen(
     val context = LocalContext.current
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
     val LightPrimaryGreen = PrimaryGreen.copy(alpha = 0.1f)
-    val hikes by viewModel.hikes.collectAsState()
     var showDeleteAllDialog by remember { mutableStateOf(false) }
+    val allHikes by viewModel.hikes.collectAsState(initial = emptyList())
+    val filtered by viewModel.filteredHikes.collectAsState(initial = emptyList())
+    val isSearching = searchQuery.text.isNotBlank()
+
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
 
             // Header: Title + Search (no scroll)
-            // Spacer(modifier = Modifier.height(4.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -130,16 +112,16 @@ fun HikeListScreen(
                     }
                 }
             }
-
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Search
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = {
                     searchQuery = it
-                    onSearch(it.text)
+                    viewModel.updateSearchQuery(it.text)
                 },
-                placeholder = { Text("Search My Hikes", color = PrimaryGreen) },
+                placeholder = { Text("Find hikes by name or location", color = PrimaryGreen.copy(0.6f)) },
                 leadingIcon = {
                     Icon(
                         painter = painterResource(id = R.drawable.search_icon),
@@ -170,29 +152,43 @@ fun HikeListScreen(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                if (hikes.isEmpty()) {
-                    item {
-                        Text(
-                            text = "No hikes yet. Add one!",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = TextSecondary
-                        )
+                when {
+                    // Trường hợp không có bất kỳ hike nào trong DB
+                    allHikes.isEmpty() && !isSearching -> {
+                        item {
+                            Text(
+                                text = "No hikes yet. Add one!",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = TextSecondary
+                            )
+                        }
                     }
-                } else {
-                    items(hikes) { hike ->
-                        HikeItem(
-                            hike = hike,
-//                            onEdit = { selected -> /* mở màn hình edit */ },
-//                            onDelete = { selected -> viewModel.deleteHike(selected) },
-                            onClick = { selected ->
-                                navController.navigate("hike_detail/${selected.id}")
-                            }
-                        )
+
+                    // Trường hợp đang search nhưng không có kết quả
+                    isSearching && filtered.isEmpty() -> {
+                        item {
+                            Text(
+                                text = "No results found",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = TextSecondary
+                            )
+                        }
+                    }
+
+                    // Có dữ liệu để hiển thị (theo search nếu có query)
+                    else -> {
+                        items(filtered) { hike ->
+                            HikeItem(
+                                hike = hike,
+                                onClick = { selected -> navController.navigate("hike_detail/${selected.id}") }
+                            )
+                        }
                     }
                 }
 
                 item { Spacer(modifier = Modifier.height(80.dp)) }
             }
+
         }
 
         // Floating Add Hike Button
@@ -328,9 +324,11 @@ fun HikeItem(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = dateFormatter.format(Date(hike.dateMs)),
+                    text = "${hike.location} · ${dateFormatter.format(Date(hike.dateMs))}",
                     style = MaterialTheme.typography.labelSmall,
-                    color = TextSecondary
+                    color = TextSecondary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
             Spacer(modifier = Modifier.width(4.dp))
