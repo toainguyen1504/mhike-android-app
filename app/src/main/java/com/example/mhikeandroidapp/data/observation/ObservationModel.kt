@@ -1,10 +1,10 @@
 package com.example.mhikeandroidapp.data.observation
-import com.example.mhikeandroidapp.data.hike.HikeModel
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.ForeignKey
 import androidx.room.Index
+import com.example.mhikeandroidapp.data.hike.HikeModel
 
 @Entity(
     tableName = "observations",
@@ -22,10 +22,10 @@ data class ObservationModel(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0L,
 
-    val hikeId: Long,           // FK → Hike.id
-    val note: String,           // Nội dung ghi chú
-    val timeMs: Long,           // Thời gian ghi chú (epoch millis)
-    val photoUri: String? = null, // Ảnh đính kèm (nếu có)
+    val hikeId: Long,                 // FK → Hike.id
+    val observationText: String,     // Nội dung quan sát (required)
+    val timeMs: Long = System.currentTimeMillis(), // required - default
 
-    val createdAtMs: Long = System.currentTimeMillis()
+    val comments: String? = null,    // optional
+    val imageObservationUri: String? = null     // optional
 )

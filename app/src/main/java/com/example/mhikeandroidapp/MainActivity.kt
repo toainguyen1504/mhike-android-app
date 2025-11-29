@@ -24,10 +24,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.mhikeandroidapp.data.hike.HikeModel
+import com.example.mhikeandroidapp.data.observation.ObservationRepository
 import com.example.mhikeandroidapp.screens.hike.AddHikeScreen
 import com.example.mhikeandroidapp.screens.hike.EditHikeScreen
 import com.example.mhikeandroidapp.screens.hike.HikeDetailScreen
 import com.example.mhikeandroidapp.ui.theme.PrimaryGreen
+import com.example.mhikeandroidapp.viewmodel.ObservationViewModel
 
 class MainActivity : ComponentActivity() {
 
@@ -52,8 +54,16 @@ class MainActivity : ComponentActivity() {
         setContent {
             MhikeAndroidAppTheme {
                 val navController = rememberNavController()
+
+                // Hikes
                 val hikeViewModel: HikeViewModel = viewModel(factory = factory)
                 val hikes by hikeViewModel.hikes.collectAsState(initial = emptyList())
+
+                // Observations
+                val observationRepository = ObservationRepository(db)
+                val observationFactory = ObservationViewModel.Factory(observationRepository)
+                val observationViewModel: ObservationViewModel = viewModel(factory = observationFactory)
+
 
                 NavHost(
                     navController = navController,
@@ -98,6 +108,7 @@ class MainActivity : ComponentActivity() {
                             hike?.let {
                                 HikeDetailScreen(
                                     hike = it,
+                                    observationViewModel = observationViewModel, // observation
                                     onEdit = {
                                         navController.navigate("edit_hike/${it.id}")
                                     },

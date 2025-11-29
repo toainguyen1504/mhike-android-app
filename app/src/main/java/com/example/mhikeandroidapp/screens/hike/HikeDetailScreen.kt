@@ -1,12 +1,16 @@
 package com.example.mhikeandroidapp.screens.hike
 
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -20,11 +24,21 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import com.example.mhikeandroidapp.R
+import com.example.mhikeandroidapp.data.AppDatabase
 import com.example.mhikeandroidapp.data.hike.HikeModel
+import com.example.mhikeandroidapp.data.observation.ObservationModel
+import com.example.mhikeandroidapp.data.observation.ObservationRepository
 import com.example.mhikeandroidapp.ui.theme.*
+import com.example.mhikeandroidapp.viewmodel.ObservationViewModel
+import java.io.File
+import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -34,16 +48,11 @@ data class Observation(
     val timestamp: Long
 )
 
-val mockObservation = Observation(
-    id = 1L,
-    content = "Trail condition was muddy",
-    timestamp = 1764000000000
-)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HikeDetailScreen(
     hike: HikeModel,
+    observationViewModel: ObservationViewModel,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     onAddObservation: () -> Unit,
@@ -59,6 +68,47 @@ fun HikeDetailScreen(
 
     // state open confirm dialog
     var showDeleteDialog by remember { mutableStateOf(false) }
+
+
+    // state open add observation dialog
+    var showAddObservationDialog by remember { mutableStateOf(false) }
+
+    // init observation
+    var observationText by remember { mutableStateOf("") }
+    var comments by remember { mutableStateOf("") }
+    var imageObservationUri by remember { mutableStateOf("") }
+
+    // collect observation list
+    val observations by observationViewModel
+        .getObservationsForHike(hike.id)
+        .collectAsState(initial = emptyList())
+
+
+    // thumbnail observation
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = { uri ->
+            if (uri != null) {
+                val contentResolver = context.contentResolver
+
+                // Tạo file mới trong bộ nhớ riêng của app
+                val fileName = "hike_${System.currentTimeMillis()}.jpg"
+                val file = File(context.filesDir, fileName)
+
+                try {
+                    contentResolver.openInputStream(uri)?.use { input ->
+                        FileOutputStream(file).use { output ->
+                            input.copyTo(output)
+                        }
+                    }
+                    // Lưu đường dẫn file thay vì content://
+                    imageObservationUri = file.absolutePath
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+    )
 
     Scaffold(
         topBar = {
@@ -194,7 +244,7 @@ fun HikeDetailScreen(
                             Spacer(modifier = Modifier.height(8.dp))
 
                             hike.reminderMs?.let {
-                                Text("Reminder: ${formatDate(it)}", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
+                                Text("Reminder: ${formatDateDetail(it)}", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
                             }
                         }
                         Spacer(modifier = Modifier.height(8.dp))
@@ -240,7 +290,7 @@ fun HikeDetailScreen(
                             .size(50.dp)
                             .clip(CircleShape)
                             .background(HighlightsGreen)
-                            .clickable { onAddObservation() },
+                            .clickable { showAddObservationDialog = true },
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -253,20 +303,74 @@ fun HikeDetailScreen(
                 }
             }
 
-            item {
-                // Mock Observation Item
+            // Observation Item
+            items(observations) { obs ->
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     border = BorderStroke(1.dp, PrimaryGreen),
                     colors = CardDefaults.cardColors(containerColor = Color.White)
                 ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Text(mockObservation.content, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface)
-                        Text(formatDate(mockObservation.timestamp), style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        val context = LocalContext.current
+
+                        // image request
+                        val imageRequest = if (!obs.imageObservationUri.isNullOrBlank()) {
+                            ImageRequest.Builder(context)
+                                .data(File(obs.imageObservationUri!!))
+                                .crossfade(true)
+                                .error(R.drawable.default_img)
+                                .placeholder(R.drawable.default_img)
+                                .build()
+                        } else {
+                            ImageRequest.Builder(context)
+                                .data(R.drawable.default_img)
+                                .build()
+                        }
+
+                        // Thumbnail left
+                        AsyncImage(
+                            model = imageRequest,
+                            contentDescription = "Observation Image",
+                            modifier = Modifier
+                                .size(64.dp) // nhỏ hơn HikeItem một chút
+                                .clip(RoundedCornerShape(8.dp)),
+                            contentScale = ContentScale.Crop
+                        )
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        // observation info right
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                obs.observationText,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            obs.comments?.let {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    it,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = TextSecondary,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                formatDateDetail(obs.timeMs),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = TextSecondary
+                            )
+                        }
                     }
                 }
             }
+
 
             item {
                 Spacer(modifier = Modifier.height(500.dp)) // add margin bottom to test SCROLL
@@ -312,6 +416,112 @@ fun HikeDetailScreen(
             )
         }
 
+        //  Add observation Dialog
+        if (showAddObservationDialog) {
+            AlertDialog(
+                onDismissRequest = { showAddObservationDialog = false },
+                title = {
+                    Text("Add Observation", style = MaterialTheme.typography.titleMedium, color = PrimaryGreen)
+                },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        // Thumbnail image picker
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(180.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color.Gray)
+                                .clickable {
+                                    imagePickerLauncher.launch(
+                                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                    )
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            val isDefaultImage = imageObservationUri.isBlank()
+                            val painter = if (isDefaultImage) {
+                                painterResource(id = R.drawable.default_img)
+                            } else {
+                                rememberAsyncImagePainter(model = imageObservationUri)
+                            }
+
+                            Image(
+                                painter = painter,
+                                contentDescription = "Observation Image",
+                                modifier = Modifier.matchParentSize(),
+                                contentScale = ContentScale.Crop
+                            )
+
+                            if (isDefaultImage) {
+                                Box(
+                                    modifier = Modifier
+                                        .matchParentSize()
+                                        .background(Color.Black.copy(alpha = 0.4f))
+                                )
+                            }
+
+                            Text(
+                                text = "Choose Image",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.White,
+                                modifier = Modifier
+                                    .background(Color.Black.copy(alpha = 0.6f))
+                                    .padding(12.dp)
+                            )
+                        }
+
+                        // Observation Text
+                        OutlinedTextField(
+                            value = observationText,
+                            onValueChange = { observationText = it },
+                            label = { Text("Observation *...") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        // Comments
+                        OutlinedTextField(
+                            value = comments,
+                            onValueChange = { comments = it },
+                            label = { Text("Comments here...") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showAddObservationDialog = false
+                            val observation = ObservationModel(
+                                hikeId = hike.id,
+                                observationText = observationText,
+                                timeMs = System.currentTimeMillis(),
+                                comments = comments.ifBlank { null },
+                                imageObservationUri = imageObservationUri.ifBlank { null }
+                            )
+
+                            //save to db
+                            observationViewModel.addObservation(observation)
+
+                            Toast.makeText(context, "Observation added!", Toast.LENGTH_SHORT).show()
+                        }
+                    ) {
+                        Text("Save", color = PrimaryGreen)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showAddObservationDialog = false }) {
+                        Text("Cancel", color = TextBlack)
+                    }
+                }
+            )
+        }
+
+
     }
 }
 
+fun formatDateDetail(epochMs: Long): String {
+    val sdf = SimpleDateFormat("dd MMM yyyy · HH:mm", Locale.getDefault())
+    return sdf.format(Date(epochMs))
+}

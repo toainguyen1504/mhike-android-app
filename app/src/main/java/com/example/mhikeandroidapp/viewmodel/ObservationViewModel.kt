@@ -1,6 +1,7 @@
 package com.example.mhikeandroidapp.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.mhikeandroidapp.data.observation.ObservationModel
 import com.example.mhikeandroidapp.data.observation.ObservationRepository
@@ -40,6 +41,16 @@ class ObservationViewModel(private val repository: ObservationRepository) : View
     fun deleteAllForHike(hikeId: Long) {
         viewModelScope.launch {
             repository.deleteAllForHike(hikeId)
+        }
+    }
+
+    class Factory(private val repository: ObservationRepository) : ViewModelProvider.Factory {
+        override fun <T : ViewModel> create(modelClass: Class<T>): T {
+            if (modelClass.isAssignableFrom(ObservationViewModel::class.java)) {
+                @Suppress("UNCHECKED_CAST")
+                return ObservationViewModel(repository) as T
+            }
+            throw IllegalArgumentException("Unknown ViewModel class")
         }
     }
 }
