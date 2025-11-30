@@ -664,7 +664,8 @@ fun HikeDetailScreen(
                                     observationText = observationText,
                                     timeMs = System.currentTimeMillis(),
                                     comments = comments.ifBlank { null },
-                                    imageObservationUri = imageObservationUri.ifBlank { null }
+//                                    imageObservationUri = imageObservationUri.ifBlank { null }
+                                    imageObservationUri = imageObservationUri,
                                 )
 
                                 // save to db
@@ -835,8 +836,10 @@ fun HikeDetailScreen(
                                 val updated = editingObservation!!.copy(
                                     observationText = observationText,
                                     comments = comments.ifBlank { null },
-                                    imageObservationUri = imageObservationUri.ifBlank { null }
+//                                    imageObservationUri = imageObservationUri.ifBlank { null }
+                                    imageObservationUri = imageObservationUri,
                                 )
+
                                 observationViewModel.updateObservation(updated)
 
                                 Toast.makeText(context, "Observation updated!", Toast.LENGTH_SHORT).show()

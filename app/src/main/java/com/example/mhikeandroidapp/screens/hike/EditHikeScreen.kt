@@ -115,6 +115,8 @@ fun EditHikeScreen(
                 parking != null
     }
 
+    // Sync
+    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
