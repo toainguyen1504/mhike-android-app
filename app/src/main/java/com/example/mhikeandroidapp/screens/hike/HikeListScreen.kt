@@ -96,7 +96,10 @@ fun HikeListScreen(
                         DropdownMenuItem(
                             onClick = {
                                 expanded = false
-                                // TODO: thực thi sync lên cloud
+                                // TODO: sync all to cloud
+                                viewModel.syncAllHikesToCloud {
+                                    Toast.makeText(context, "All hikes synced to cloud!", Toast.LENGTH_SHORT).show()
+                                }
                             },
                             text = { Text("Sync all to cloud", color = AccentBlue) },
                         )
