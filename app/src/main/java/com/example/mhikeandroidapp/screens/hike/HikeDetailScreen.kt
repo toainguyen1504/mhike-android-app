@@ -367,113 +367,126 @@ fun HikeDetailScreen(
             }
 
             // Observation Item
-            items(observations) { obs ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { selectedObservation = obs },
-                    shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, TextSecondary),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
+            if (observations.isEmpty()) {
+                item {
+                    // Empty observation
+                    Text(
+                        text = "No observations yet. Add one!",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = TextSecondary,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            } else {
+                items(observations) { obs ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { selectedObservation = obs },
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, TextSecondary),
+                        colors = CardDefaults.cardColors(containerColor = Color.White)
                     ) {
-//                        val context = LocalContext.current
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
 
-                        // image request
-                        val imageRequest = if (!obs.imageObservationUri.isNullOrBlank()) {
-                            ImageRequest.Builder(context)
-                                .data(File(obs.imageObservationUri!!))
-                                .crossfade(true)
-                                .error(R.drawable.default_img)
-                                .placeholder(R.drawable.default_img)
-                                .build()
-                        } else {
-                            ImageRequest.Builder(context)
-                                .data(R.drawable.default_img)
-                                .build()
-                        }
+                            // image request
+                            val imageRequest = if (!obs.imageObservationUri.isNullOrBlank()) {
+                                ImageRequest.Builder(context)
+                                    .data(File(obs.imageObservationUri!!))
+                                    .crossfade(true)
+                                    .error(R.drawable.default_img)
+                                    .placeholder(R.drawable.default_img)
+                                    .build()
+                            } else {
+                                ImageRequest.Builder(context)
+                                    .data(R.drawable.default_img)
+                                    .build()
+                            }
 
-                        // Thumbnail left
-                        AsyncImage(
-                            model = imageRequest,
-                            contentDescription = "Observation Image",
-                            modifier = Modifier
-                                .size(72.dp)
-                                .clip(RoundedCornerShape(8.dp)),
-                            contentScale = ContentScale.Crop
-                        )
-
-                        Spacer(modifier = Modifier.width(12.dp))
-
-                        // observation info center
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                obs.observationText,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
+                            // Thumbnail left
+                            AsyncImage(
+                                model = imageRequest,
+                                contentDescription = "Observation Image",
+                                modifier = Modifier
+                                    .size(72.dp)
+                                    .clip(RoundedCornerShape(8.dp)),
+                                contentScale = ContentScale.Crop
                             )
-                            Spacer(modifier = Modifier.height(8.dp))
 
-                            obs.comments?.let {
+                            Spacer(modifier = Modifier.width(12.dp))
+
+                            // observation info center
+                            Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    it,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = TextSecondary,
+                                    obs.observationText,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurface,
                                     maxLines = 2,
                                     overflow = TextOverflow.Ellipsis
                                 )
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                obs.comments?.let {
+                                    Text(
+                                        it,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = TextSecondary,
+                                        maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(10.dp))
+
+                                Text(
+                                    formatDateDetail(obs.timeMs),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = TextSecondary
+                                )
                             }
-                            Spacer(modifier = Modifier.height(10.dp))
 
-                            Text(
-                                formatDateDetail(obs.timeMs),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = TextSecondary
-                            )
-                        }
+                            // action buttons right (vertical)
+                            Column(
+                                horizontalAlignment = Alignment.End,
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                IconButton(
+                                    onClick = {
+                                        editingObservation = obs
+                                        observationText = obs.observationText
+                                        comments = obs.comments ?: ""
+                                        imageObservationUri = obs.imageObservationUri ?: ""
+                                        showEditObservationDialog = true
+                                    }) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.pencil_icon),
+                                        contentDescription = "Edit Observation",
+                                        tint = AccentBlue,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
 
-                        // action buttons right (vertical)
-                        Column(
-                            horizontalAlignment = Alignment.End,
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            IconButton(
-                                onClick = {
-                                    editingObservation = obs
-                                    observationText = obs.observationText
-                                    comments = obs.comments ?: ""
-                                    imageObservationUri = obs.imageObservationUri ?: ""
-                                    showEditObservationDialog = true
+                                // Delete observation
+                                IconButton(onClick = {
+                                    deletingObservation = obs
+                                    showDeleteObservationDialog = true
                                 }) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.pencil_icon),
-                                    contentDescription = "Edit Observation",
-                                    tint = AccentBlue,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
-
-                            // Delete observation
-                            IconButton(onClick = {
-                                deletingObservation = obs
-                                showDeleteObservationDialog = true
-                            }) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.delete_icon),
-                                    contentDescription = "Delete Observation",
-                                    tint = ErrorRed,
-                                    modifier = Modifier.size(20.dp)
-                                )
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.delete_icon),
+                                        contentDescription = "Delete Observation",
+                                        tint = ErrorRed,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
                             }
                         }
                     }
                 }
             }
+
+
 
             item {
                 Spacer(modifier = Modifier.height(500.dp)) // add margin bottom to test SCROLL
