@@ -93,6 +93,7 @@ fun HikeDetailScreen(
     var comments by remember { mutableStateOf("") }
     var imageObservationUri by remember { mutableStateOf("") }
     var observationError by remember { mutableStateOf(false) } // state  error
+    var selectedObservation by remember { mutableStateOf<ObservationModel?>(null) }
 
     // collect observation list
     val observations by observationViewModel
@@ -383,14 +384,16 @@ fun HikeDetailScreen(
             // Observation Item
             items(observations) { obs ->
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { selectedObservation = obs },
                     shape = RoundedCornerShape(12.dp),
                     border = BorderStroke(1.dp, TextSecondary),
                     colors = CardDefaults.cardColors(containerColor = Color.White)
                 ) {
                     Row(
                         modifier = Modifier.padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         val context = LocalContext.current
 
@@ -491,6 +494,8 @@ fun HikeDetailScreen(
                 Spacer(modifier = Modifier.height(500.dp)) // add margin bottom to test SCROLL
             }
         }
+
+
 
         // AlertDialog confirm delete
         if (showDeleteDialog) {
@@ -700,6 +705,36 @@ fun HikeDetailScreen(
                         resetObservationForm()
                     }) {
                         Text("Cancel", color = TextBlack)
+                    }
+                }
+            )
+        }
+
+        // Observation Detail Dialog
+        selectedObservation?.let { obs ->
+            AlertDialog(
+                onDismissRequest = { selectedObservation = null },
+                title = { Text("Observation Detail") },
+                text = {
+                    Column {
+                        Text(
+                            text = obs.observationText,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        obs.comments?.let {
+                            Text(
+                                text = it,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = TextSecondary
+                            )
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = { selectedObservation = null }) {
+                        Text("Close")
                     }
                 }
             )
