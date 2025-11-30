@@ -24,6 +24,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
@@ -294,13 +295,17 @@ fun HikeDetailScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            Button(
+                            //edit btn
+                            OutlinedButton(
                                 onClick = onEdit,
                                 modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(containerColor = AccentBlue)
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = AccentBlue),
+                                border = BorderStroke(1.dp, AccentBlue)
                             ) {
-                                Text("Edit")
+                                Text("Edit", color = AccentBlue)
                             }
+
+                            // delete btn
                             Button(
                                 onClick = { showDeleteDialog = true },
                                 modifier = Modifier.weight(1f),
@@ -309,27 +314,26 @@ fun HikeDetailScreen(
                                 Text("Delete")
                             }
                         }
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
 
                         // Sync to cloud Button
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            horizontalArrangement = Arrangement.Center
                         ) {
-                            // Sync to cloud
-                            Button(
-                                onClick = {
+                            Text(
+                                text = "Sync to cloud",
+                                color = HighlightsGreen,
+                                style = MaterialTheme.typography.bodyLarge,
+                                textDecoration = TextDecoration.Underline,
+                                modifier = Modifier.clickable {
                                     coroutineScope.launch {
                                         val observations = observationViewModel.getObservationsForHikeOnce(hike.id)
                                         hikeViewModel.syncToCloud(hike, observations)
                                         Toast.makeText(context, "Synced to cloud!", Toast.LENGTH_SHORT).show()
                                     }
-                                },
-                                modifier = Modifier.weight(1f),
-                                colors = ButtonDefaults.buttonColors(containerColor = HighlightsGreen)
-                            ) {
-                                Text("Sync to cloud")
-                            }
+                                }
+                            )
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                     }

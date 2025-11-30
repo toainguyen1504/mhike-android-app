@@ -101,7 +101,7 @@ fun HikeListScreen(
                                     Toast.makeText(context, "All hikes synced to cloud!", Toast.LENGTH_SHORT).show()
                                 }
                             },
-                            text = { Text("Sync all to cloud", color = AccentBlue) },
+                            text = { Text("Sync all to cloud", color = TextBlack) },
                         )
 
                         // Delete
