@@ -43,6 +43,7 @@ import java.text.Normalizer
 import java.text.SimpleDateFormat
 import java.util.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HikeListScreen(
     viewModel: HikeViewModel,
@@ -59,6 +60,10 @@ fun HikeListScreen(
     val filtered by viewModel.filteredHikes.collectAsState(initial = emptyList())
     val isSearching = searchQuery.text.isNotBlank()
     var isSyncing by remember { mutableStateOf(false) }
+
+    // filter
+    var showFilterDialog by remember { mutableStateOf(false) }
+
 
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -126,36 +131,62 @@ fun HikeListScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Search
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = {
-                    searchQuery = it
-                    viewModel.updateSearchQuery(it.text)
-                },
-                placeholder = { Text("Find hikes by name or location", color = PrimaryGreen.copy(0.6f)) },
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.search_icon),
-                        contentDescription = "Search",
-                        modifier = Modifier.size(24.dp),
-                        tint = PrimaryGreen
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = {
+                        searchQuery = it
+                        viewModel.updateSearchQuery(it.text)
+                    },
+                    placeholder = {
+                        Text("Search by name or location...",
+                            color = PrimaryGreen.copy(0.6f),
+                            style = MaterialTheme.typography.bodyMedium) },
+                    leadingIcon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.search_icon),
+                            contentDescription = "Search",
+                            modifier = Modifier.size(24.dp),
+                            tint = PrimaryGreen
+                        )
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(56.dp),
+                    shape = RoundedCornerShape(24.dp),
+                    singleLine = true,
+                    colors = TextFieldDefaults.colors(
+                        focusedIndicatorColor = PrimaryGreen,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        cursorColor = PrimaryGreen,
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedContainerColor = LightPrimaryGreen,
+                        unfocusedContainerColor = LightPrimaryGreen
                     )
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(24.dp),
-                singleLine = true,
-                colors = TextFieldDefaults.colors(
-                    focusedIndicatorColor = PrimaryGreen,
-                    unfocusedIndicatorColor = Color.Transparent,
-                    cursorColor = PrimaryGreen,
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    focusedContainerColor = LightPrimaryGreen,
-                    unfocusedContainerColor = LightPrimaryGreen
                 )
-            )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                // Filter icon button
+                IconButton(
+                    onClick = { showFilterDialog = true },
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(LightPrimaryGreen)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.filter_icon),
+                        contentDescription = "Filter",
+                        tint = PrimaryGreen,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
             Spacer(modifier = Modifier.height(16.dp))
 
             // List hike
@@ -164,7 +195,7 @@ fun HikeListScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 when {
-                    // Trường hợp không có bất kỳ hike nào trong DB
+                    // Empty hike
                     allHikes.isEmpty() && !isSearching -> {
                         item {
                             Text(
@@ -175,7 +206,7 @@ fun HikeListScreen(
                         }
                     }
 
-                    // Trường hợp đang search nhưng không có kết quả
+                    // search but no result
                     isSearching && filtered.isEmpty() -> {
                         item {
                             Text(
@@ -186,7 +217,7 @@ fun HikeListScreen(
                         }
                     }
 
-                    // Có dữ liệu để hiển thị (theo search nếu có query)
+                    // having hikes
                     else -> {
                         items(filtered) { hike ->
                             HikeItem(
@@ -295,6 +326,72 @@ fun HikeListScreen(
             }
         }
     }
+
+    //Modal Filter
+    if (showFilterDialog) {
+        AlertDialog(
+            onDismissRequest = { showFilterDialog = false },
+            title = { Text("Filter Hikes", color = PrimaryGreen) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    // Ví dụ các filter cơ bản
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        label = { Text("Name / Location") }
+                    )
+
+                    // Difficulty dropdown
+                    var diffExpanded by remember { mutableStateOf(false) }
+                    var difficulty by remember { mutableStateOf("") }
+
+                    ExposedDropdownMenuBox(
+                        expanded = diffExpanded,
+                        onExpandedChange = { diffExpanded = !diffExpanded }
+                    ) {
+                        OutlinedTextField(
+                            value = difficulty,
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text("Difficulty") },
+                            modifier = Modifier.menuAnchor().fillMaxWidth()
+                        )
+                        ExposedDropdownMenu(
+                            expanded = diffExpanded,
+                            onDismissRequest = { diffExpanded = false }
+                        ) {
+                            listOf("Easy", "Medium", "Hard").forEach {
+                                DropdownMenuItem(
+                                    text = { Text(it) },
+                                    onClick = { difficulty = it; diffExpanded = false }
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showFilterDialog = false
+                        // TODO: gọi viewModel.applyFilters(...)
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = HighlightsGreen,
+                        contentColor = Color.White
+                    )
+                ) {
+                    Text("Apply")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showFilterDialog = false }) {
+                    Text("Cancel", color = TextBlack)
+                }
+            }
+        )
+    }
+
 
 }
 
