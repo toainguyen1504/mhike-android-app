@@ -302,6 +302,19 @@ fun HikeDetailScreen(
                             ) {
                                 Text("Delete")
                             }
+//                            Button(
+//                                onClick = {
+//                                    lifecycleScope.launch {
+//                                        val observations = observationViewModel.getObservationsForHikeOnce(hike.id)
+//                                        syncHikeToCloud(hike, observations)
+//                                        Toast.makeText(context, "Synced to cloud!", Toast.LENGTH_SHORT).show()
+//                                    }
+//                                },
+//                                modifier = Modifier.weight(1f),
+//                                colors = ButtonDefaults.buttonColors(containerColor = HighlightsGreen)
+//                            ) {
+//                                Text("Sync")
+//                            }
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                     }

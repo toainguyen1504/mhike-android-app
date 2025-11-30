@@ -3,6 +3,9 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
+
+    // Add the Google services Gradle plugin
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -56,6 +59,12 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:5.0.5")
     implementation("com.google.android.material:material:1.12.0")
 
+    // firebase
+    implementation(platform("com.google.firebase:firebase-bom:34.6.0"))
+    implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-storage")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.6.4")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -68,9 +77,5 @@ dependencies {
     implementation (libs.coil.compose)
     implementation (libs.androidx.room.runtime)
     implementation (libs.androidx.room.ktx)
-//    implementation (libs.androidx.lifecycle.runtime.compose)
-//    implementation (libs.androidx.runtime.livedata)
-//    implementation (libs.androidx.lifecycle.livedata.ktx)
-//    annotationProcessor (libs.androidx.room.compiler)
     ksp (libs.androidx.room.room.compiler)
 }

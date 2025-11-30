@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "706340810074",
+    "project_id": "mhike-android-app",
+    "storage_bucket": "mhike-android-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:706340810074:android:3a185d5b933e6ae9879763",
+        "android_client_info": {
+          "package_name": "com.example.coffee_shop_android"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0oYozOuQvVNqo5ZX0JAQ4Ldg0vwQhnAw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:706340810074:android:1b6698a8cfb618ee879763",
+        "android_client_info": {
+          "package_name": "com.example.mhikeandroidapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0oYozOuQvVNqo5ZX0JAQ4Ldg0vwQhnAw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
