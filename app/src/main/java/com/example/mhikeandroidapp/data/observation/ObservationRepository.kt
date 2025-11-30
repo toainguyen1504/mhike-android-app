@@ -8,8 +8,8 @@ class ObservationRepository(private val db: AppDatabase) {
     fun getObservationsForHikeFlow(hikeId: Long): Flow<List<ObservationModel>> =
         db.observationDao().getObservationsForHikeFlow(hikeId)
 
-    suspend fun getObservationById(id: Long): ObservationModel? =
-        db.observationDao().getObservationById(id)
+    suspend fun getObservationsForHike(hikeId: Long): List<ObservationModel> =
+        db.observationDao().getObservationsForHike(hikeId)
 
     suspend fun insertObservation(observation: ObservationModel): Long =
         db.observationDao().insertObservation(observation)

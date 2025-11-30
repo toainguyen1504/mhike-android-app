@@ -20,6 +20,10 @@ class ObservationViewModel(private val repository: ObservationRepository) : View
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     }
 
+    suspend fun getObservationsForHikeOnce(hikeId: Long): List<ObservationModel> {
+        return repository.getObservationsForHike(hikeId)
+    }
+
     fun addObservation(observation: ObservationModel) {
         viewModelScope.launch {
             repository.insertObservation(observation)

@@ -8,11 +8,19 @@ import kotlinx.coroutines.flow.Flow
 interface ObservationDao {
 
     @Query("""
-        SELECT * FROM observations
-        WHERE hikeId = :hikeId
-        ORDER BY timeMs ASC
-    """)
-    fun getObservationsForHikeFlow(hikeId: Long): Flow<List<ObservationModel>>
+    SELECT * FROM observations
+    WHERE hikeId = :hikeId
+    ORDER BY timeMs ASC
+""")
+    suspend fun getObservationsForHike(hikeId: Long): List<ObservationModel> // for sync
+
+    @Query("""
+    SELECT * FROM observations
+    WHERE hikeId = :hikeId
+    ORDER BY timeMs ASC
+""")
+    fun getObservationsForHikeFlow(hikeId: Long): Flow<List<ObservationModel>> // return Flow<List<>> for ui
+
 
     @Query("SELECT * FROM observations WHERE id = :id LIMIT 1")
     suspend fun getObservationById(id: Long): ObservationModel?

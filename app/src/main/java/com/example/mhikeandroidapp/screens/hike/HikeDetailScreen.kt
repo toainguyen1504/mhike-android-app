@@ -37,7 +37,9 @@ import com.example.mhikeandroidapp.data.hike.HikeModel
 import com.example.mhikeandroidapp.data.observation.ObservationModel
 import com.example.mhikeandroidapp.data.observation.ObservationRepository
 import com.example.mhikeandroidapp.ui.theme.*
+import com.example.mhikeandroidapp.viewmodel.HikeViewModel
 import com.example.mhikeandroidapp.viewmodel.ObservationViewModel
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -53,6 +55,7 @@ data class Observation(
 @Composable
 fun HikeDetailScreen(
     hike: HikeModel,
+    hikeViewModel: HikeViewModel,
     observationViewModel: ObservationViewModel,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
@@ -142,6 +145,9 @@ fun HikeDetailScreen(
             }
         }
     )
+
+    // Sync
+    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -283,7 +289,7 @@ fun HikeDetailScreen(
                         }
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        // Buttons
+                        // Edit and Delete Buttons
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -302,19 +308,28 @@ fun HikeDetailScreen(
                             ) {
                                 Text("Delete")
                             }
-//                            Button(
-//                                onClick = {
-//                                    lifecycleScope.launch {
-//                                        val observations = observationViewModel.getObservationsForHikeOnce(hike.id)
-//                                        syncHikeToCloud(hike, observations)
-//                                        Toast.makeText(context, "Synced to cloud!", Toast.LENGTH_SHORT).show()
-//                                    }
-//                                },
-//                                modifier = Modifier.weight(1f),
-//                                colors = ButtonDefaults.buttonColors(containerColor = HighlightsGreen)
-//                            ) {
-//                                Text("Sync")
-//                            }
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Sync to cloud Button
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            // Sync to cloud
+                            Button(
+                                onClick = {
+                                    coroutineScope.launch {
+                                        val observations = observationViewModel.getObservationsForHikeOnce(hike.id)
+                                        hikeViewModel.syncToCloud(hike, observations)
+                                        Toast.makeText(context, "Synced to cloud!", Toast.LENGTH_SHORT).show()
+                                    }
+                                },
+                                modifier = Modifier.weight(1f),
+                                colors = ButtonDefaults.buttonColors(containerColor = HighlightsGreen)
+                            ) {
+                                Text("Sync to cloud")
+                            }
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                     }

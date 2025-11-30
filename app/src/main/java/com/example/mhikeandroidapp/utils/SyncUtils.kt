@@ -10,41 +10,56 @@ import java.io.File
 
 object SyncUtils {
 
+    private fun HikeModel.toMap(imageUrl: String?): Map<String, Any?> = mapOf(
+        "id" to id,
+        "name" to name,
+        "location" to location,
+        "dateMs" to dateMs,
+        "parking" to parking,
+        "plannedLengthKm" to plannedLengthKm,
+        "difficulty" to difficulty,
+        "description" to description,
+        "estimatedDurationMinutes" to estimatedDurationMinutes,
+        "groupSize" to groupSize,
+        "latitude" to latitude,
+        "longitude" to longitude,
+        "imageUri" to imageUrl,
+        "reminderMs" to reminderMs,
+        "createdAtMs" to createdAtMs,
+        "updatedAtMs" to System.currentTimeMillis()
+    )
+
+    private fun ObservationModel.toMap(imageUrl: String?): Map<String, Any?> = mapOf(
+        "id" to id,
+        "hikeId" to hikeId,
+        "observationText" to observationText,
+        "timeMs" to timeMs,
+        "comments" to comments,
+        "imageObservationUri" to imageUrl
+    )
+
+    private suspend fun ensureUploaded(urlOrPath: String?): String? {
+        if (urlOrPath.isNullOrBlank()) return null
+        if (urlOrPath.startsWith("http")) return urlOrPath // đã là URL
+        return uploadImageToFirebase(urlOrPath) // local path
+    }
+
     suspend fun syncHikeToCloud(hike: HikeModel, observations: List<ObservationModel>) {
+        require(hike.id != 0L) { "Hike chưa có id hợp lệ (autoGenerate). Insert trước khi sync." }
+
         val db = FirebaseFirestore.getInstance()
 
-        // Upload hike image if exists
-        val hikeImageUrl = hike.imageUri?.let { uploadImageToFirebase(it) }
+        val hikeImageUrl = ensureUploaded(hike.imageUri)
+        val hikeData = hike.toMap(hikeImageUrl)
 
-        val hikeData = hashMapOf(
-            "name" to hike.name,
-            "location" to hike.location,
-            "dateMs" to hike.dateMs,
-            "parking" to hike.parking,
-            "plannedLengthKm" to hike.plannedLengthKm,
-            "difficulty" to hike.difficulty,
-            "description" to hike.description,
-            "estimatedDurationMinutes" to hike.estimatedDurationMinutes,
-            "groupSize" to hike.groupSize,
-            "latitude" to hike.latitude,
-            "longitude" to hike.longitude,
-            "imageUri" to hikeImageUrl,
-            "reminderMs" to hike.reminderMs,
-            "createdAtMs" to hike.createdAtMs,
-            "updatedAtMs" to hike.updatedAtMs
-        )
-
-        db.collection("hikes").document(hike.id.toString()).set(hikeData).await()
+        db.collection("hikes")
+            .document(hike.id.toString())
+            .set(hikeData)
+            .await()
 
         for (obs in observations) {
-            val obsImageUrl = obs.imageObservationUri?.let { uploadImageToFirebase(it) }
-
-            val obsData = hashMapOf(
-                "observationText" to obs.observationText,
-                "timeMs" to obs.timeMs,
-                "comments" to obs.comments,
-                "imageObservationUri" to obsImageUrl
-            )
+            val obsImageUrl = ensureUploaded(obs.imageObservationUri)
+            val obsData = obs.toMap(obsImageUrl)
 
             db.collection("hikes")
                 .document(hike.id.toString())
@@ -60,7 +75,6 @@ object SyncUtils {
         val uri = Uri.fromFile(file)
         val storageRef = FirebaseStorage.getInstance().reference
         val imageRef = storageRef.child("images/${file.name}")
-
         return try {
             imageRef.putFile(uri).await()
             imageRef.downloadUrl.await().toString()

@@ -48,20 +48,20 @@ class MainActivity : ComponentActivity() {
             "mhike-db"
         ).build()
 
-        val repository = HikeRepository(db)
-        val factory = HikeViewModelFactory(repository)
+        val hikeRepository = HikeRepository(db)
+        val observationRepository = ObservationRepository(db)
+        val hikeFactory = HikeViewModelFactory(hikeRepository, observationRepository)
+        val observationFactory = ObservationViewModel.Factory(observationRepository)
 
         setContent {
             MhikeAndroidAppTheme {
                 val navController = rememberNavController()
 
                 // Hikes
-                val hikeViewModel: HikeViewModel = viewModel(factory = factory)
+                val hikeViewModel: HikeViewModel = viewModel(factory = hikeFactory)
                 val hikes by hikeViewModel.hikes.collectAsState(initial = emptyList())
 
                 // Observations
-                val observationRepository = ObservationRepository(db)
-                val observationFactory = ObservationViewModel.Factory(observationRepository)
                 val observationViewModel: ObservationViewModel = viewModel(factory = observationFactory)
 
 
@@ -108,6 +108,7 @@ class MainActivity : ComponentActivity() {
                             hike?.let {
                                 HikeDetailScreen(
                                     hike = it,
+                                    hikeViewModel = hikeViewModel,
                                     observationViewModel = observationViewModel, // observation
                                     onEdit = {
                                         navController.navigate("edit_hike/${it.id}")
