@@ -19,8 +19,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
@@ -230,11 +235,31 @@ fun HikeListScreen(
                 )
             },
             text = {
-                Text(
-                    "Are you sure you want to delete ALL hikes?",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+                Column {
+                    Text(
+                        buildAnnotatedString {
+                            append("Are you sure you want to delete ")
+                            withStyle(
+                                style = SpanStyle(
+                                    color = ErrorRed,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            ) {
+                                append("ALL hikes")
+                            }
+                            append("?")
+                        },
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = TextBlack
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "This action will remove all hikes and their linked observations permanently.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextBlack,
+                        fontStyle = FontStyle.Italic
+                    )
+                }
             },
             confirmButton = {
                 TextButton(

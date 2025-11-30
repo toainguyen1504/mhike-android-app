@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -493,11 +494,20 @@ fun HikeDetailScreen(
                     )
                 },
                 text = {
-                    Text(
-                        "Are you sure you want to delete this hike?",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    Column {
+                        Text(
+                            "Are you sure you want to delete this hike?",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = TextBlack
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            "All observations linked to this hike will also be permanently deleted.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = TextBlack,
+                            fontStyle = FontStyle.Italic
+                        )
+                    }
                 },
                 confirmButton = {
                     TextButton(
