@@ -16,7 +16,7 @@ class ObservationViewModel(private val repository: ObservationRepository) : View
     // Lấy danh sách ghi chú cho một chuyến đi cụ thể
     fun getObservationsForHike(hikeId: Long): Flow<List<ObservationModel>> {
         return repository.getObservationsForHikeFlow(hikeId)
-            .map { it.sortedBy { obs -> obs.timeMs } }
+            .map { it.sortedByDescending { obs -> obs.timeMs } }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     }
 

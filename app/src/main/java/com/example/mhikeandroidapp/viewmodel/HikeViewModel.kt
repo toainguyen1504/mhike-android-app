@@ -24,7 +24,7 @@ class HikeViewModel(
 
     // All hikes sorted by date (latest first)
     val hikes = hikeRepository.getAllHikesFlow()
-        .map { it.sortedByDescending { h -> h.dateMs } }
+        .map { it.sortedByDescending { h -> h.createdAtMs } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // Sync status for UI feedback

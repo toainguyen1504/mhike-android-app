@@ -10,7 +10,7 @@ interface ObservationDao {
     @Query("""
     SELECT * FROM observations
     WHERE hikeId = :hikeId
-    ORDER BY timeMs ASC
+    ORDER BY timeMs DESC
 """)
     suspend fun getObservationsForHike(hikeId: Long): List<ObservationModel> // for sync
 

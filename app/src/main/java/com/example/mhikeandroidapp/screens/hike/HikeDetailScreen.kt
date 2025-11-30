@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -298,7 +299,7 @@ fun HikeDetailScreen(
                             //edit btn
                             OutlinedButton(
                                 onClick = onEdit,
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier.weight(1f).padding(vertical = 4.dp),
                                 colors = ButtonDefaults.outlinedButtonColors(contentColor = AccentBlue),
                                 border = BorderStroke(1.dp, AccentBlue)
                             ) {
@@ -308,33 +309,43 @@ fun HikeDetailScreen(
                             // delete btn
                             Button(
                                 onClick = { showDeleteDialog = true },
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier.weight(1f).padding(vertical = 4.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = ErrorRed)
                             ) {
                                 Text("Delete")
                             }
                         }
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
 
                         // Sync to cloud Button
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.Center
                         ) {
-                            Text(
-                                text = "Sync to cloud",
-                                color = HighlightsGreen,
-                                style = MaterialTheme.typography.bodyLarge,
-                                textDecoration = TextDecoration.Underline,
-                                modifier = Modifier.clickable {
-                                    coroutineScope.launch {
-                                        val observations = observationViewModel.getObservationsForHikeOnce(hike.id)
-                                        hikeViewModel.syncToCloud(hike, observations)
-                                        Toast.makeText(context, "Synced to cloud!", Toast.LENGTH_SHORT).show()
+                            Surface(
+                                shape = RoundedCornerShape(50),
+                                border = BorderStroke(1.dp, Color.Transparent),
+                                color = Color.Transparent,
+                                modifier = Modifier
+                                    .padding(10.dp)
+                                    .clickable {
+                                        coroutineScope.launch {
+                                            val observations = observationViewModel.getObservationsForHikeOnce(hike.id)
+                                            hikeViewModel.syncToCloud(hike, observations)
+                                            Toast.makeText(context, "Synced to cloud!", Toast.LENGTH_SHORT).show()
+                                        }
                                     }
-                                }
-                            )
+                            ) {
+                                Text(
+                                    text = "☁️ Sync to cloud",
+                                    color = PrimaryGreen,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
+                                )
+                            }
                         }
+
                         Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
@@ -917,6 +928,6 @@ fun HikeDetailScreen(
 }
 
 fun formatDateDetail(epochMs: Long): String {
-    val sdf = SimpleDateFormat("dd MMM yyyy · HH:mm", Locale.getDefault())
+    val sdf = SimpleDateFormat("HH:mm · dd MMM", Locale.getDefault())
     return sdf.format(Date(epochMs))
 }
