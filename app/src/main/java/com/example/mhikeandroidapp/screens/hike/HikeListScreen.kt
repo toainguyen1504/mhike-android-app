@@ -54,6 +54,7 @@ fun HikeListScreen(
     val allHikes by viewModel.hikes.collectAsState(initial = emptyList())
     val filtered by viewModel.filteredHikes.collectAsState(initial = emptyList())
     val isSearching = searchQuery.text.isNotBlank()
+    var isSyncing by remember { mutableStateOf(false) }
 
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -79,7 +80,7 @@ fun HikeListScreen(
                         Icon(
                             painter = painterResource(id = R.drawable.menu_icon),
                             contentDescription = "Menu",
-                            tint = PrimaryGreen,
+                            tint = TextBlack,
                             modifier = Modifier
                                 .size(40.dp)
                                 .padding(8.dp)
@@ -96,13 +97,16 @@ fun HikeListScreen(
                         DropdownMenuItem(
                             onClick = {
                                 expanded = false
+                                isSyncing = true
                                 // TODO: sync all to cloud
                                 viewModel.syncAllHikesToCloud {
+                                    isSyncing = false
                                     Toast.makeText(context, "All hikes synced to cloud!", Toast.LENGTH_SHORT).show()
                                 }
                             },
                             text = { Text("Sync all to cloud", color = TextBlack) },
                         )
+                        Divider(color = Color.LightGray, thickness = 1.dp)
 
                         // Delete
                         DropdownMenuItem(
@@ -251,6 +255,21 @@ fun HikeListScreen(
                 }
             }
         )
+    }
+
+    if (isSyncing) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.3f)), // overlay
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                CircularProgressIndicator(color = PrimaryGreen)
+                Spacer(modifier = Modifier.height(12.dp))
+                Text("Syncing all hikes to cloud...", color = Color.White)
+            }
+        }
     }
 
 }
