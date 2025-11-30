@@ -379,7 +379,7 @@ fun HikeDetailScreen(
                         modifier = Modifier.padding(12.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        val context = LocalContext.current
+//                        val context = LocalContext.current
 
                         // image request
                         val imageRequest = if (!obs.imageObservationUri.isNullOrBlank()) {
@@ -698,19 +698,51 @@ fun HikeDetailScreen(
         selectedObservation?.let { obs ->
             AlertDialog(
                 onDismissRequest = { selectedObservation = null },
-                title = { Text("Observation Detail") },
+                title = {
+                    Text(
+                        "Observation Detail",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = PrimaryGreen
+                    )
+                },
                 text = {
-                    Column {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        // Image
+                        val imageRequest = if (!obs.imageObservationUri.isNullOrBlank()) {
+                            ImageRequest.Builder(context)
+                                .data(File(obs.imageObservationUri!!))
+                                .crossfade(true)
+                                .error(R.drawable.default_img)
+                                .placeholder(R.drawable.default_img)
+                                .build()
+                        } else {
+                            ImageRequest.Builder(context)
+                                .data(R.drawable.default_img)
+                                .build()
+                        }
+
+                        AsyncImage(
+                            model = imageRequest,
+                            contentDescription = "Observation Image",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(180.dp)
+                                .clip(RoundedCornerShape(8.dp)),
+                            contentScale = ContentScale.Crop
+                        )
+
+                        // Observation text
                         Text(
                             text = obs.observationText,
-                            style = MaterialTheme.typography.bodyLarge,
+                            style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurface
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Comments
                         obs.comments?.let {
                             Text(
                                 text = it,
-                                style = MaterialTheme.typography.bodyMedium,
+                                style = MaterialTheme.typography.bodyLarge,
                                 color = TextSecondary
                             )
                         }
@@ -718,11 +750,16 @@ fun HikeDetailScreen(
                 },
                 confirmButton = {
                     TextButton(onClick = { selectedObservation = null }) {
-                        Text("Close")
+                        Text(
+                            "Close",
+                            color = TextBlack,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
                     }
                 }
             )
         }
+
 
         // Edit Observation Dialog
         if (showEditObservationDialog && editingObservation != null) {
