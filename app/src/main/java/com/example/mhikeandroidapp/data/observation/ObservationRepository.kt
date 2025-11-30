@@ -22,5 +22,9 @@ class ObservationRepository(private val db: AppDatabase) {
 
     suspend fun deleteAllForHike(hikeId: Long) =
         db.observationDao().deleteAllForHike(hikeId)
+
+    // sync
+    suspend fun getByHikeId(hikeId: Long): List<ObservationModel> =
+        db.observationDao().getByHikeId(hikeId)
 }
 

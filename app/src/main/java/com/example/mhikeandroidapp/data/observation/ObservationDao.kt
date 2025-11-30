@@ -36,4 +36,8 @@ interface ObservationDao {
 
     @Query("DELETE FROM observations WHERE hikeId = :hikeId")
     suspend fun deleteAllForHike(hikeId: Long)
+
+    // Sync all to cloud
+    @Query("SELECT * FROM observations WHERE hikeId = :hikeId ORDER BY timeMs ASC")
+    suspend fun getByHikeId(hikeId: Long): List<ObservationModel>
 }

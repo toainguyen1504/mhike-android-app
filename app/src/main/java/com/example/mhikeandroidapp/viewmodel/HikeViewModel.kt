@@ -1,5 +1,6 @@
 package com.example.mhikeandroidapp.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -21,43 +22,64 @@ class HikeViewModel(
     private val observationRepository: ObservationRepository
 ) : ViewModel() {
 
+    // All hikes sorted by date (latest first)
     val hikes = hikeRepository.getAllHikesFlow()
         .map { it.sortedByDescending { h -> h.dateMs } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    // Sync status for UI feedback
     private val _syncStatus = MutableStateFlow<String?>(null)
     val syncStatus: StateFlow<String?> = _syncStatus
 
+    // Sync a single hike by ID
     fun syncToCloud(hikeId: Long) {
         viewModelScope.launch {
-            _syncStatus.value = "Đang đồng bộ..."
+            _syncStatus.value = "Syncing..."
             try {
                 val hike = hikeRepository.getHikeById(hikeId)
                 if (hike == null) {
-                    _syncStatus.value = "Không tìm thấy hike $hikeId"
+                    _syncStatus.value = "Hike $hikeId not found"
                     return@launch
                 }
                 val observations = observationRepository.getObservationsForHike(hikeId)
                 SyncUtils.syncHikeToCloud(hike, observations)
-                _syncStatus.value = "Đồng bộ thành công"
+                _syncStatus.value = "Sync successful"
             } catch (e: Exception) {
-                _syncStatus.value = "Lỗi đồng bộ: ${e.message}"
+                _syncStatus.value = "Sync error: ${e.message}"
             }
         }
     }
 
+    // Sync a single hike with its observations
     fun syncToCloud(hike: HikeModel, observations: List<ObservationModel>) {
         viewModelScope.launch {
-            _syncStatus.value = "Đang đồng bộ..."
+            _syncStatus.value = "Syncing..."
             try {
                 SyncUtils.syncHikeToCloud(hike, observations)
-                _syncStatus.value = "Đồng bộ thành công"
+                _syncStatus.value = "Sync successful"
             } catch (e: Exception) {
-                _syncStatus.value = "Lỗi đồng bộ: ${e.message}"
+                _syncStatus.value = "Sync error: ${e.message}"
             }
         }
     }
 
+    // Sync all hikes in the local database
+    fun syncAllHikesToCloud(onDone: () -> Unit = {}) {
+        viewModelScope.launch {
+            _syncStatus.value = "Syncing all hikes..."
+            val allHikes = hikes.value
+            for (hike in allHikes) {
+                val observations = observationRepository.getByHikeId(hike.id)
+                try {
+                    SyncUtils.syncHikeToCloud(hike, observations)
+                } catch (e: Exception) {
+                    Log.e("HikeViewModel", "Sync failed for hike ${hike.id}: ${e.message}")
+                }
+            }
+            _syncStatus.value = "All hikes synced successfully"
+            onDone()
+        }
+    }
 
     // state search
     private val _searchQuery = MutableStateFlow("")
@@ -72,6 +94,7 @@ class HikeViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
 
+    // CRUD operations
     fun addHike(hike: HikeModel) {
         viewModelScope.launch {
             hikeRepository.insertHike(hike)
