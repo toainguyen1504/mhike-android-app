@@ -43,7 +43,6 @@ import java.text.Normalizer
 import java.text.SimpleDateFormat
 import java.util.*
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HikeListScreen(
     viewModel: HikeViewModel,
@@ -333,38 +332,53 @@ fun HikeListScreen(
             onDismissRequest = { showFilterDialog = false },
             title = { Text("Filter Hikes", color = PrimaryGreen) },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    // Ví dụ các filter cơ bản
-                    OutlinedTextField(
-                        value = searchQuery,
-                        onValueChange = { searchQuery = it },
-                        label = { Text("Name / Location") }
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    // Length range slider
+                    var lengthRange by remember { mutableStateOf(0f..100f) } // km
+                    Row {
+                        Text(
+                            "Length range (km): ",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = TextBlack
+                        )
+                        Text(
+                            "${lengthRange.start.toInt()} - ${lengthRange.endInclusive.toInt()}",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = TextBlack
+                        )
+                    }
+                    RangeSlider(
+                        value = lengthRange,
+                        onValueChange = { lengthRange = it },
+                        valueRange = 0f..1000f, //km
+                        steps = 50
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Difficulty radio group
+                    var difficulty by remember { mutableStateOf("") }
+                    Text(
+                        "Difficulty:",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = TextBlack
                     )
 
-                    // Difficulty dropdown
-                    var diffExpanded by remember { mutableStateOf(false) }
-                    var difficulty by remember { mutableStateOf("") }
-
-                    ExposedDropdownMenuBox(
-                        expanded = diffExpanded,
-                        onExpandedChange = { diffExpanded = !diffExpanded }
-                    ) {
-                        OutlinedTextField(
-                            value = difficulty,
-                            onValueChange = {},
-                            readOnly = true,
-                            label = { Text("Difficulty") },
-                            modifier = Modifier.menuAnchor().fillMaxWidth()
-                        )
-                        ExposedDropdownMenu(
-                            expanded = diffExpanded,
-                            onDismissRequest = { diffExpanded = false }
-                        ) {
-                            listOf("Easy", "Medium", "Hard").forEach {
-                                DropdownMenuItem(
-                                    text = { Text(it) },
-                                    onClick = { difficulty = it; diffExpanded = false }
+                    Column {
+                        listOf("Easy", "Medium", "Hard").forEach { level ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { difficulty = level }
+                            ) {
+                                RadioButton(
+                                    selected = (difficulty == level),
+                                    onClick = { difficulty = level },
+                                    colors = RadioButtonDefaults.colors(selectedColor = PrimaryGreen)
                                 )
+                                Text(level, style = MaterialTheme.typography.bodyLarge, color = TextBlack)
                             }
                         }
                     }
@@ -374,7 +388,7 @@ fun HikeListScreen(
                 Button(
                     onClick = {
                         showFilterDialog = false
-                        // TODO: gọi viewModel.applyFilters(...)
+                        // TODO: gọi viewModel.applyFilters(lengthRange, startDate, endDate, difficulty)
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = HighlightsGreen,
