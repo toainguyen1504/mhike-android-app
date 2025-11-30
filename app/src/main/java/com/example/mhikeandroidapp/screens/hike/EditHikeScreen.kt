@@ -194,11 +194,11 @@ fun EditHikeScreen(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
+                        .imePadding()
                         .clip(RoundedCornerShape(12.dp))
                         .background(LightPrimaryGreen)
                         .padding(16.dp)
                 ) {
-
                     // Thumbnail
                     item {
                         Box(
@@ -230,7 +230,7 @@ fun EditHikeScreen(
                                 Box(
                                     modifier = Modifier
                                         .matchParentSize()
-                                        .background(Color.Black.copy(alpha = 0.4f)) // lớp phủ đen nhẹ
+                                        .background(Color.Black.copy(alpha = 0.4f)) // Overlay
                                 )
                             }
 
@@ -499,7 +499,10 @@ fun EditHikeScreen(
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             colors = inputColors
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+
+                    item {
+                        Spacer(modifier = Modifier.height(120.dp))
                     }
                 }
             }

@@ -227,8 +227,8 @@ fun HikeDetailScreen(
                             },
                             contentDescription = "Hike Image",
                             modifier = Modifier
-                                .width(200.dp)
-                                .height(120.dp)
+                                .width(180.dp)
+                                .height(100.dp)
                                 .clip(RoundedCornerShape(8.dp)),
                             contentScale = ContentScale.Crop
                         )
@@ -275,20 +275,6 @@ fun HikeDetailScreen(
                                 Text("Group Size: $it", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
                             }
                             Spacer(modifier = Modifier.height(8.dp))
-
-                            hike.latitude?.let {
-                                Text("Latitude: $it", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
-                            }
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            hike.longitude?.let {
-                                Text("Longitude: $it", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
-                            }
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            hike.reminderMs?.let {
-                                Text("Reminder: ${formatDateDetail(it)}", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
-                            }
                         }
                         Spacer(modifier = Modifier.height(8.dp))
 
@@ -316,7 +302,7 @@ fun HikeDetailScreen(
                                 Text("Delete")
                             }
                         }
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
 
                         // Sync to cloud Button
                         Row(
@@ -346,15 +332,13 @@ fun HikeDetailScreen(
                                 )
                             }
                         }
-
-                        Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
             }
 
             item {
                 // Observation Section
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,

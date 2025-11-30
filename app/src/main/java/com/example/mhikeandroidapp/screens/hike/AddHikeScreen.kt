@@ -189,6 +189,7 @@ fun AddHikeScreen(
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
+                        .imePadding() // add padding = keyboard's height
                         .clip(RoundedCornerShape(12.dp))
                         .background(LightPrimaryGreen)
                         .padding(16.dp)
@@ -494,6 +495,10 @@ fun AddHikeScreen(
                             colors = inputColors
                         )
                         Spacer(modifier = Modifier.height(8.dp))
+                    }
+
+                    item {
+                        Spacer(modifier = Modifier.height(120.dp))
                     }
                 }
             }
