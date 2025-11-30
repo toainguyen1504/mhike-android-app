@@ -25,7 +25,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import com.example.mhikeandroidapp.R
 import com.example.mhikeandroidapp.data.hike.HikeModel
 import com.example.mhikeandroidapp.ui.theme.ErrorRed
@@ -112,6 +114,10 @@ fun AddHikeScreen(
                 difficulty.isNotBlank() &&
                 parking != null
     }
+
+    // Confirm info before add hike
+    var showConfirmDialog by remember { mutableStateOf(false) }
+    var pendingHike by remember { mutableStateOf<HikeModel?>(null) }
 
     Scaffold(
         topBar = {
@@ -560,10 +566,10 @@ fun AddHikeScreen(
                             groupSize = groupSize.toIntOrNull(),
                             imageUri = imageUri,
                         )
-                        onSave(hike)
 
-                        // Successfully message
-                        Toast.makeText(context, "Hike added successfully!", Toast.LENGTH_SHORT).show()
+                        // confirm before save to DB - show modal
+                        pendingHike = hike
+                        showConfirmDialog = true
                     },
                     modifier = Modifier
                         .weight(0.6f)
@@ -578,6 +584,91 @@ fun AddHikeScreen(
             }
             Spacer(modifier = Modifier.height(24.dp))
         }
+
+
+        // Review hike dialog
+        if (showConfirmDialog && pendingHike != null) {
+            val hike = pendingHike!!
+            val dateFormatter = remember { SimpleDateFormat("dd MMM yyyy", Locale.getDefault()) }
+
+            AlertDialog(
+                onDismissRequest = { showConfirmDialog = false },
+                title = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            "Confirm Hike",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = PrimaryGreen,
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        val context = LocalContext.current
+                        val imageRequest = if (!hike.imageUri.isNullOrBlank()) {
+                            ImageRequest.Builder(context)
+                                .data(File(hike.imageUri))
+                                .crossfade(true)
+                                .error(R.drawable.default_img)
+                                .placeholder(R.drawable.default_img)
+                                .build()
+                        } else {
+                            ImageRequest.Builder(context)
+                                .data(R.drawable.default_img)
+                                .build()
+                        }
+
+                        AsyncImage(
+                            model = imageRequest,
+                            contentDescription = "Thumbnail",
+                            modifier = Modifier
+                                .size(48.dp) // nhỏ gọn
+                                .clip(RoundedCornerShape(6.dp)),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("Name: ${hike.name}", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
+                        Text("Location: ${hike.location}", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
+                        Text("Date: ${dateFormatter.format(Date(hike.dateMs))}", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
+                        Text("Length: ${hike.plannedLengthKm} km", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
+                        Text("Difficulty: ${hike.difficulty}", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
+                        Text("Parking: ${if (hike.parking) "Yes" else "No"}", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
+                        Text("Duration: ${hike.estimatedDurationMinutes ?: "—"} minutes", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
+                        Text("Group size: ${hike.groupSize ?: "—"}", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
+                        Text("Description: ${hike.description ?: "—"}", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showConfirmDialog = false
+                            onSave(pendingHike!!) // save to DB
+                            Toast.makeText(context, "Hike added successfully!", Toast.LENGTH_SHORT).show()
+                        },
+                        modifier = Modifier
+                            .height(50.dp)
+                            .padding(horizontal = 16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = HighlightsGreen,
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Text("Confirm")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showConfirmDialog = false }) {
+                        Text("Back", color = TextBlack)
+                    }
+                }
+            )
+        }
+
     }
 }
 

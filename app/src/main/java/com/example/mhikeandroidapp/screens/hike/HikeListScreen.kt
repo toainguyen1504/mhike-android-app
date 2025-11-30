@@ -32,7 +32,6 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.mhikeandroidapp.R
 import com.example.mhikeandroidapp.data.hike.HikeModel
-import com.example.mhikeandroidapp.ui.theme.AccentBlue
 import com.example.mhikeandroidapp.ui.theme.ErrorRed
 import com.example.mhikeandroidapp.ui.theme.PrimaryGreen
 import com.example.mhikeandroidapp.ui.theme.HighlightsGreen
