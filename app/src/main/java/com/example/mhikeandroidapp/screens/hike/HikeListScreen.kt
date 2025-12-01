@@ -334,7 +334,30 @@ fun HikeListScreen(
     if (showFilterDialog) {
         AlertDialog(
             onDismissRequest = { showFilterDialog = false },
-            title = { Text("Filter Hikes", color = PrimaryGreen) },
+            title = {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Filter Hikes", color = PrimaryGreen, style = MaterialTheme.typography.titleLarge)
+
+                    IconButton(
+                        onClick = { showFilterDialog = false },
+                        modifier = Modifier
+                            .offset(x = (12).dp, y = (-12).dp)
+                            .size(40.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.close_icon),
+                            contentDescription = "Close",
+                            tint = TextSecondary,
+                            modifier = Modifier
+                                .size(16.dp)
+                        )
+                    }
+                }
+            },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     // Length range slider
@@ -387,39 +410,55 @@ fun HikeListScreen(
                     }
                 }
             },
+            //action buttons
             confirmButton = {
-                Button(
-                    onClick = {
-                        showFilterDialog = false
-                        // TODO: call to apply filters(lengthRange, difficulty)
-                        val safeDifficulty = if (selectedDifficulty.isNullOrBlank()) null else selectedDifficulty
-
-                        viewModel.updateLengthRange(lengthRange)
-                        viewModel.updateDifficulty(safeDifficulty)
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = HighlightsGreen,
-                        contentColor = Color.White
-                    )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Apply")
-                }
+                    // Reset styled button
+                    Button(
+                        onClick = {
+                            showFilterDialog = false
+                            viewModel.resetFilters()
+                            lengthRange = 0f..1000f
+                            selectedDifficulty = null
+                        },
+                        modifier = Modifier
+                            .weight(0.3f)
+                            .height(50.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = TextSecondary.copy(alpha = 0.2f),
+                            contentColor = TextBlack
+                        )
+                    ) {
+                        Text("Reset")
+                    }
 
-                // Reset button
-                TextButton(onClick = {
-                    showFilterDialog = false
-                    viewModel.resetFilters()
-                    lengthRange = 0f..1000f
-                    selectedDifficulty = null
-                }) {
-                    Text("Reset", color = TextBlack, fontWeight = FontWeight.Bold)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showFilterDialog = false }) {
-                    Text("Cancel", color = TextBlack)
+                    // Apply button
+                    Button(
+                        onClick = {
+                            showFilterDialog = false
+                            val safeDifficulty = selectedDifficulty?.takeIf { it.isNotBlank() }
+                            viewModel.updateLengthRange(lengthRange)
+                            viewModel.updateDifficulty(safeDifficulty)
+                        },
+                        modifier = Modifier
+                            .weight(0.4f)
+                            .height(50.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = HighlightsGreen,
+                            contentColor = Color.White
+                        ),
+                        contentPadding = PaddingValues(vertical = 8.dp, horizontal = 16.dp)
+                    ) {
+                        Text("Apply")
+                    }
                 }
             }
+
+
         )
     }
 
