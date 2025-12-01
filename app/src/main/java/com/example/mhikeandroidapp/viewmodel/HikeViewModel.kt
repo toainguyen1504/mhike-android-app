@@ -12,6 +12,7 @@ import com.example.mhikeandroidapp.utils.SyncUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -85,19 +86,52 @@ class HikeViewModel(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
 
-    val filteredHikes = searchQuery
-        .flatMapLatest { query ->
-            if (query.isBlank()) hikeRepository.getAllHikesFlow()
-            else hikeRepository.searchHikes(query)
-        }
-        .map { list -> list.sortedByDescending { it.dateMs } }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    // filters
+    private val _filterLengthRange = MutableStateFlow(0f..100f)
+    private val _filterDifficulty = MutableStateFlow<String?>(null)
+
+    fun updateLengthRange(range: ClosedFloatingPointRange<Float>) {
+        _filterLengthRange.value = range
+    }
+
+    fun updateDifficulty(difficulty: String?) {
+        _filterDifficulty.value = difficulty
+    }
+
+    fun resetFilters() {
+        _searchQuery.value = ""
+        _filterLengthRange.value = 0f..1000f
+        _filterDifficulty.value = null
+    }
+
+    // combine search and filter
+    val filteredHikes = combine(
+        hikeRepository.getAllHikesFlow(),
+        _searchQuery,
+        _filterLengthRange,
+        _filterDifficulty
+    ) { hikes, query, range, difficulty ->
+        hikes.filter { hike ->
+            val matchesQuery = query.isBlank() ||
+                    hike.name.contains(query, ignoreCase = true) ||
+                    hike.location.contains(query, ignoreCase = true)
+
+            val matchesLength = hike.plannedLengthKm in range.start..range.endInclusive
+
+            val matchesDifficulty = difficulty.isNullOrBlank() ||
+                    hike.difficulty.equals(difficulty, ignoreCase = true)
+
+            matchesQuery && matchesLength && matchesDifficulty
+        }.sortedByDescending { it.dateMs }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
 
     // CRUD operations
     fun addHike(hike: HikeModel) {
         viewModelScope.launch {
             hikeRepository.insertHike(hike)
+            // Optional: force refresh if needed
+            _searchQuery.value = ""
         }
     }
 

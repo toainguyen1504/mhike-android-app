@@ -52,16 +52,20 @@ fun HikeListScreen(
     navController: NavHostController
 ) {
     val context = LocalContext.current
-    var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
+//    val searchQuery by viewModel.searchQuery.collectAsState()
+    var searchField by remember { mutableStateOf(TextFieldValue("")) }   // UI state for search field
+
     val LightPrimaryGreen = PrimaryGreen.copy(alpha = 0.1f)
     var showDeleteAllDialog by remember { mutableStateOf(false) }
     val allHikes by viewModel.hikes.collectAsState(initial = emptyList())
     val filtered by viewModel.filteredHikes.collectAsState(initial = emptyList())
-    val isSearching = searchQuery.text.isNotBlank()
+    val isSearching = searchField.text.isNotBlank()
     var isSyncing by remember { mutableStateOf(false) }
 
     // filter
     var showFilterDialog by remember { mutableStateOf(false) }
+    var lengthRange by remember { mutableStateOf(0f..1000f) } // km
+    var selectedDifficulty  by remember { mutableStateOf<String?>(null) }
 
 
 
@@ -135,10 +139,10 @@ fun HikeListScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 OutlinedTextField(
-                    value = searchQuery,
+                    value = searchField,
                     onValueChange = {
-                        searchQuery = it
-                        viewModel.updateSearchQuery(it.text)
+                        searchField = it
+                        viewModel.updateSearchQuery(it.text) // đồng bộ với ViewModel
                     },
                     placeholder = {
                         Text("Search by name or location...",
@@ -334,8 +338,8 @@ fun HikeListScreen(
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     // Length range slider
-                    var lengthRange by remember { mutableStateOf(0f..100f) } // km
                     Row {
+
                         Text(
                             "Length range (km): ",
                             style = MaterialTheme.typography.bodyLarge,
@@ -357,7 +361,6 @@ fun HikeListScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     // Difficulty radio group
-                    var difficulty by remember { mutableStateOf("") }
                     Text(
                         "Difficulty:",
                         style = MaterialTheme.typography.bodyLarge,
@@ -371,11 +374,11 @@ fun HikeListScreen(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable { difficulty = level }
+                                    .clickable { selectedDifficulty  = level }
                             ) {
                                 RadioButton(
-                                    selected = (difficulty == level),
-                                    onClick = { difficulty = level },
+                                    selected = (selectedDifficulty  == level),
+                                    onClick = { selectedDifficulty  = level },
                                     colors = RadioButtonDefaults.colors(selectedColor = PrimaryGreen)
                                 )
                                 Text(level, style = MaterialTheme.typography.bodyLarge, color = TextBlack)
@@ -388,7 +391,11 @@ fun HikeListScreen(
                 Button(
                     onClick = {
                         showFilterDialog = false
-                        // TODO: gọi viewModel.applyFilters(lengthRange, startDate, endDate, difficulty)
+                        // TODO: call to apply filters(lengthRange, difficulty)
+                        val safeDifficulty = if (selectedDifficulty.isNullOrBlank()) null else selectedDifficulty
+
+                        viewModel.updateLengthRange(lengthRange)
+                        viewModel.updateDifficulty(safeDifficulty)
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = HighlightsGreen,
@@ -396,6 +403,16 @@ fun HikeListScreen(
                     )
                 ) {
                     Text("Apply")
+                }
+
+                // Reset button
+                TextButton(onClick = {
+                    showFilterDialog = false
+                    viewModel.resetFilters()
+                    lengthRange = 0f..1000f
+                    selectedDifficulty = null
+                }) {
+                    Text("Reset", color = TextBlack, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
