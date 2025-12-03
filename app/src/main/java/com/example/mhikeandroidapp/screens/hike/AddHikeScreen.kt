@@ -37,7 +37,6 @@ import com.example.mhikeandroidapp.ui.theme.TextBlack
 import com.example.mhikeandroidapp.ui.theme.TextSecondary
 import java.io.File
 import java.io.FileOutputStream
-import java.text.Normalizer
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -62,6 +61,7 @@ fun AddHikeScreen(
     var duration by remember { mutableStateOf("") }
     var groupSize by remember { mutableStateOf("") }
     var imageUri by remember { mutableStateOf("") }
+    var difficulty by remember { mutableStateOf("") }
 
     // thumbnail hike
     val imagePickerLauncher = rememberLauncherForActivityResult(
@@ -92,7 +92,6 @@ fun AddHikeScreen(
     // difficulty
     val difficultyOptions = listOf("Easy", "Medium", "Hard")
     var expanded by remember { mutableStateOf(false) }
-    var difficulty by remember { mutableStateOf("") }
 
     // parking
     val parkingOptions = listOf("Yes", "No")
@@ -266,7 +265,6 @@ fun AddHikeScreen(
                     }
 
                     // Hike name
-                    // Hike name
                     item {
                         OutlinedTextField(
                             value = name,
@@ -361,7 +359,7 @@ fun AddHikeScreen(
                             Icon(
                                 imageVector = Icons.Default.DateRange,
                                 contentDescription = "Pick Date *",
-                                tint = if (dateError) ErrorRed else PrimaryGreen, // highlight đỏ nếu lỗi
+                                tint = if (dateError) ErrorRed else PrimaryGreen, // highlight
                                 modifier = Modifier.size(24.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
@@ -404,9 +402,7 @@ fun AddHikeScreen(
                                     color = if (parkingError && parking == null) ErrorRed
                                     else TextBlack
                                 ),
-                                colors = if (parkingError) {
-                                    inputErrorColors
-                                } else inputColors
+                                colors = if (parkingError) inputErrorColors else inputColors
                             )
 
                             ExposedDropdownMenu(

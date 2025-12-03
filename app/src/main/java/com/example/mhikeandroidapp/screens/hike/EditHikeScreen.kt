@@ -101,18 +101,25 @@ fun EditHikeScreen(
     // state errors
     var nameError by remember { mutableStateOf(false) }
     var locationError by remember { mutableStateOf(false) }
+//    var dateError by remember { mutableStateOf(false) }
     var lengthError by remember { mutableStateOf(false) }
     var difficultyError by remember { mutableStateOf(false) }
     var parkingError by remember { mutableStateOf(false) }
+    var descriptionError by remember { mutableStateOf(false) }
+    var durationError by remember { mutableStateOf(false) }
+    var groupSizeError by remember { mutableStateOf(false) }
 
-    // check validate
+    // check validate - 43200 minutes = 30 days
     fun isValid(): Boolean {
-        return name.isNotBlank() &&
-                location.isNotBlank() &&
-                dateMs > 0 &&
-                lengthKm.toDoubleOrNull() != null &&
+        return name.isNotBlank() && name.length <= 100 &&
+                location.isNotBlank() && location.length <= 100 &&
+//                dateMs != null && dateMs!! > 0 &&
+                lengthKm.toDoubleOrNull()?.let { it > 0 && it <= 1000 } == true &&
                 difficulty.isNotBlank() &&
-                parking != null
+                parking != null &&
+                (description.length <= 200) &&
+                (duration.toIntOrNull()?.let { it <= 43200 } ?: true) &&
+                (groupSize.toIntOrNull()?.let { it > 0 && it <= 100 } ?: true)
     }
 
     // Sync
@@ -189,6 +196,15 @@ fun EditHikeScreen(
                 unfocusedContainerColor = LightPrimaryGreen
             )
 
+            // styles errors
+            val inputErrorColors = TextFieldDefaults.colors(
+                focusedIndicatorColor = ErrorRed,
+                unfocusedIndicatorColor = ErrorRed,
+                cursorColor = ErrorRed,
+                focusedContainerColor = LightPrimaryGreen,
+                unfocusedContainerColor = LightPrimaryGreen
+            )
+
             // body scroll
             Box(modifier = Modifier.weight(1f)) {
                 LazyColumn(
@@ -252,21 +268,32 @@ fun EditHikeScreen(
                         OutlinedTextField(
                             value = name,
                             isError = nameError,
-                            onValueChange = { name = it },
+                            onValueChange = {
+                                name = it
+                                nameError = when {
+                                    it.isBlank() -> true
+                                    it.length > 100 -> true
+                                    else -> false
+                                }
+                            },
                             label = { Text("Hike Name *") },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(64.dp),
-                            colors = if (nameError) {
-                                TextFieldDefaults.colors(
-                                    focusedIndicatorColor = ErrorRed,
-                                    unfocusedIndicatorColor = ErrorRed,
-                                    cursorColor = ErrorRed,
-                                    focusedContainerColor = LightPrimaryGreen,
-                                    unfocusedContainerColor = LightPrimaryGreen
-                                )
-                            } else inputColors
+                            colors = if (nameError) inputErrorColors else inputColors
                         )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        if (nameError) {
+                            Text(
+                                text = when {
+                                    name.isBlank() -> "Name is required"
+                                    name.length > 100 -> "Max length is 100 characters"
+                                    else -> ""
+                                },
+                                color = ErrorRed,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
                         Spacer(modifier = Modifier.height(8.dp))
                     }
 
@@ -275,19 +302,24 @@ fun EditHikeScreen(
                         OutlinedTextField(
                             value = location,
                             isError = locationError,
-                            onValueChange = { location = it },
+                            onValueChange = {
+                                location = it
+                                locationError = it.isBlank()
+                            },
                             label = { Text("Location *") },
                             modifier = Modifier.inputModifier(),
                             colors = if (locationError ) {
-                                TextFieldDefaults.colors(
-                                    focusedIndicatorColor = ErrorRed,
-                                    unfocusedIndicatorColor = ErrorRed,
-                                    cursorColor = ErrorRed,
-                                    focusedContainerColor = LightPrimaryGreen,
-                                    unfocusedContainerColor = LightPrimaryGreen
-                                )
+                                inputErrorColors
                             } else inputColors
                         )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        if (locationError) {
+                            Text(
+                                text = if (location.isBlank()) "Location is required" else "Max length is 100 characters",
+                                color = ErrorRed,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
                         Spacer(modifier = Modifier.height(8.dp))
                     }
 
@@ -306,6 +338,7 @@ fun EditHikeScreen(
                                 { _, year, month, dayOfMonth ->
                                     calendar.set(year, month, dayOfMonth)
                                     dateMs = calendar.timeInMillis
+//                                    dateError = false
                                 },
                                 calendar.get(Calendar.YEAR),
                                 calendar.get(Calendar.MONTH),
@@ -323,7 +356,7 @@ fun EditHikeScreen(
                             Icon(
                                 imageVector = Icons.Default.DateRange,
                                 contentDescription = "Pick Date *",
-                                tint = PrimaryGreen,
+                                tint = PrimaryGreen, // highlight
                                 modifier = Modifier.size(24.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
@@ -358,15 +391,7 @@ fun EditHikeScreen(
                                     color = if (parkingError && parking == null) ErrorRed
                                     else TextBlack
                                 ),
-                                colors = if (parkingError) {
-                                    TextFieldDefaults.colors(
-                                        focusedIndicatorColor = ErrorRed,
-                                        unfocusedIndicatorColor = ErrorRed,
-                                        cursorColor = ErrorRed,
-                                        focusedContainerColor = LightPrimaryGreen,
-                                        unfocusedContainerColor = LightPrimaryGreen
-                                    )
-                                } else inputColors
+                                colors = if (parkingError) inputErrorColors else inputColors
                             )
 
                             ExposedDropdownMenu(
@@ -385,28 +410,51 @@ fun EditHikeScreen(
                                 }
                             }
                         }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        if (parkingError) {
+                            Text(
+                                text = "Parking selection is required",
+                                color = ErrorRed,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
                         Spacer(modifier = Modifier.height(8.dp))
                     }
 
-                    // Lenght
+                    // Length
                     item {
                         OutlinedTextField(
                             value = lengthKm,
                             isError = lengthError,
-                            onValueChange = { lengthKm = it },
+                            onValueChange = {
+                                lengthKm = it
+                                val num = it.toDoubleOrNull()
+                                lengthError = when {
+                                    it.isBlank() -> true
+                                    num == null -> true
+                                    num <= 0 || num > 1000 -> true
+                                    else -> false
+                                }
+                            },
                             label = { Text("Length (km) *") },
                             modifier = Modifier.inputModifier(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            colors = if (lengthError) {
-                                TextFieldDefaults.colors(
-                                    focusedIndicatorColor = ErrorRed,
-                                    unfocusedIndicatorColor = ErrorRed,
-                                    cursorColor = ErrorRed,
-                                    focusedContainerColor = LightPrimaryGreen,
-                                    unfocusedContainerColor = LightPrimaryGreen
-                                )
-                            } else inputColors
+                            colors = if (lengthError) inputErrorColors else inputColors
                         )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        if (lengthError) {
+                            Text(
+                                text = when {
+                                    lengthKm.isBlank() -> "Length is required"
+                                    lengthKm.toDoubleOrNull() == null -> "Length must be a number"
+                                    lengthKm.toDoubleOrNull()!! <= 0 || lengthKm.toDoubleOrNull()!! > 1000 ->
+                                        "Length must be between 1 and 1000 km"
+                                    else -> ""
+                                },
+                                color = ErrorRed,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
                         Spacer(modifier = Modifier.height(8.dp))
                     }
 
@@ -434,15 +482,7 @@ fun EditHikeScreen(
                                     color = if (difficultyError && difficulty.isBlank()) ErrorRed
                                     else TextBlack
                                 ),
-                                colors = if (difficultyError) {
-                                    TextFieldDefaults.colors(
-                                        focusedIndicatorColor = ErrorRed,
-                                        unfocusedIndicatorColor = ErrorRed,
-                                        cursorColor = ErrorRed,
-                                        focusedContainerColor = LightPrimaryGreen,
-                                        unfocusedContainerColor = LightPrimaryGreen
-                                    )
-                                } else inputColors
+                                colors = if (difficultyError) inputErrorColors else inputColors
                             )
 
                             ExposedDropdownMenu(
@@ -454,25 +494,47 @@ fun EditHikeScreen(
                                         text = { Text(option) },
                                         onClick = {
                                             difficulty = option
+                                            difficultyError = false
                                             expanded = false
                                         }
                                     )
                                 }
                             }
                         }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        if (difficultyError) {
+                            Text(
+                                text = "Difficulty selection is required",
+                                color = ErrorRed,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
                         Spacer(modifier = Modifier.height(8.dp))
                     }
 
                     // Description
                     item {
-
                         OutlinedTextField(
                             value = description,
-                            onValueChange = { description = it },
+                            isError = descriptionError,
+                            onValueChange = {
+                                description = it
+                                descriptionError = it.isNotBlank() && it.length > 200
+                            },
                             label = { Text("Description") },
                             modifier = Modifier.inputModifier(),
-                            colors = inputColors
+                            colors = if (descriptionError) {
+                                inputErrorColors
+                            } else inputColors
                         )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        if (descriptionError) {
+                            Text(
+                                text = "Description must be ≤ 200 characters",
+                                color = ErrorRed,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
                         Spacer(modifier = Modifier.height(8.dp))
                     }
 
@@ -480,12 +542,25 @@ fun EditHikeScreen(
                     item {
                         OutlinedTextField(
                             value = duration,
-                            onValueChange = { duration = it },
+                            isError = durationError,
+                            onValueChange = {
+                                duration = it
+                                val num = it.toIntOrNull()
+                                durationError = num != null && num > 43200
+                            },
                             label = { Text("Estimated duration (minutes)") },
                             modifier = Modifier.inputModifier(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            colors = inputColors
+                            colors = if (durationError) inputErrorColors else inputColors
                         )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        if (durationError) {
+                            Text(
+                                text = "Duration must be ≤ 43200 minutes (30 days)",
+                                color = ErrorRed,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
                         Spacer(modifier = Modifier.height(8.dp))
                     }
 
@@ -493,12 +568,26 @@ fun EditHikeScreen(
                     item {
                         OutlinedTextField(
                             value = groupSize,
-                            onValueChange = { groupSize = it },
+                            isError = groupSizeError,
+                            onValueChange = {
+                                groupSize = it
+                                val num = it.toIntOrNull()
+                                groupSizeError = num != null && (num <= 0 || num > 100)
+                            },
                             label = { Text("Group size") },
                             modifier = Modifier.inputModifier(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            colors = inputColors
+                            colors = if (groupSizeError) inputErrorColors else inputColors
                         )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        if (groupSizeError) {
+                            Text(
+                                text = "Group size must be between 1 and 100",
+                                color = ErrorRed,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
                     }
 
                     item {
@@ -535,13 +624,18 @@ fun EditHikeScreen(
                         val valid = isValid()
 
                         if (!valid) {
-                            nameError = name.isBlank()
-                            locationError = location.isBlank()
-                            lengthError = lengthKm.toDoubleOrNull() == null
+                            nameError = name.isBlank() || name.length > 100
+                            locationError = location.isBlank() || location.length > 100
+                            lengthError = lengthKm.toDoubleOrNull()?.let { it <= 0 || it > 1000 } != false
                             difficultyError = difficulty.isBlank()
                             parkingError = (parking == null)
 
-                            Toast.makeText(context, "Please fill all required fields", Toast.LENGTH_SHORT).show()
+                            // optional fields: chỉ check nếu có nhập
+                            descriptionError = description.isNotBlank() && description.length > 200
+                            durationError = duration.isNotBlank() && duration.toIntOrNull()?.let { it > 43200 } == true
+                            groupSizeError = groupSize.isNotBlank() && groupSize.toIntOrNull()?.let { it <= 0 || it > 100 } == true
+
+                            Toast.makeText(context, "Please complete all required fields and ensure values are valid!", Toast.LENGTH_SHORT).show()
                             return@Button
                         }
 
