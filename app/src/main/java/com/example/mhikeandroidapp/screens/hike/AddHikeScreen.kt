@@ -54,7 +54,8 @@ fun AddHikeScreen(
 
     var name by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
-    var dateMs by remember { mutableStateOf(System.currentTimeMillis()) }
+//    var dateMs by remember { mutableStateOf(System.currentTimeMillis()) }
+    var dateMs by remember { mutableStateOf<Long?>(null) } // null to display label "Select a day"
     var parking: Boolean? by remember { mutableStateOf(null) }
     var lengthKm by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
@@ -101,6 +102,7 @@ fun AddHikeScreen(
     // state errors
     var nameError by remember { mutableStateOf(false) }
     var locationError by remember { mutableStateOf(false) }
+    var dateError by remember { mutableStateOf(false) }
     var lengthError by remember { mutableStateOf(false) }
     var difficultyError by remember { mutableStateOf(false) }
     var parkingError by remember { mutableStateOf(false) }
@@ -109,7 +111,8 @@ fun AddHikeScreen(
     fun isValid(): Boolean {
         return name.isNotBlank() &&
                 location.isNotBlank() &&
-                dateMs > 0 &&
+                dateMs != null &&
+                dateMs!! > 0 &&
                 lengthKm.toDoubleOrNull() != null &&
                 difficulty.isNotBlank() &&
                 parking != null
@@ -254,7 +257,10 @@ fun AddHikeScreen(
                         OutlinedTextField(
                             value = name,
                             isError = nameError,
-                            onValueChange = { name = it },
+                            onValueChange = {
+                                name = it
+                                nameError = it.isBlank()
+                            },
                             label = { Text("Hike Name *") },
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -277,7 +283,10 @@ fun AddHikeScreen(
                         OutlinedTextField(
                             value = location,
                             isError = locationError,
-                            onValueChange = { location = it },
+                            onValueChange = {
+                                location = it
+                                locationError = it.isBlank()
+                            },
                             label = { Text("Location *") },
                             modifier = Modifier.inputModifier(),
                             colors = if (locationError ) {
@@ -300,7 +309,9 @@ fun AddHikeScreen(
                         }
 
                         val calendar = remember { Calendar.getInstance() }
-                        calendar.timeInMillis = dateMs
+                        if (dateMs != null) {
+                            calendar.timeInMillis = dateMs!!
+                        }
 
                         val datePickerDialog = remember {
                             DatePickerDialog(
@@ -308,6 +319,7 @@ fun AddHikeScreen(
                                 { _, year, month, dayOfMonth ->
                                     calendar.set(year, month, dayOfMonth)
                                     dateMs = calendar.timeInMillis
+                                    dateError = false
                                 },
                                 calendar.get(Calendar.YEAR),
                                 calendar.get(Calendar.MONTH),
@@ -325,14 +337,14 @@ fun AddHikeScreen(
                             Icon(
                                 imageVector = Icons.Default.DateRange,
                                 contentDescription = "Pick Date *",
-                                tint = PrimaryGreen,
+                                tint = if (dateError) ErrorRed else PrimaryGreen, // highlight đỏ nếu lỗi
                                 modifier = Modifier.size(24.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                text = "Date*: ${dateFormatter.format(Date(dateMs))}",
+                                text = if (dateMs == null) "Select a day *" else "Date*: ${dateFormatter.format(Date(dateMs!!))}",
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = if (dateError) ErrorRed else MaterialTheme.colorScheme.onSurface
                             )
                         }
                         Spacer(modifier = Modifier.height(8.dp))
@@ -395,7 +407,10 @@ fun AddHikeScreen(
                         OutlinedTextField(
                             value = lengthKm,
                             isError = lengthError,
-                            onValueChange = { lengthKm = it },
+                            onValueChange = {
+                                lengthKm = it
+                                lengthError = it.isBlank()
+                            },
                             label = { Text("Length (km) *") },
                             modifier = Modifier.inputModifier(),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -456,6 +471,7 @@ fun AddHikeScreen(
                                         text = { Text(option) },
                                         onClick = {
                                             difficulty = option
+                                            difficultyError = false
                                             expanded = false
                                         }
                                     )
@@ -546,6 +562,7 @@ fun AddHikeScreen(
                         if (!valid) {
                             nameError = name.isBlank()
                             locationError = location.isBlank()
+                            dateError = (dateMs == null)
                             lengthError = lengthKm.toDoubleOrNull() == null
                             difficultyError = difficulty.isBlank()
                             parkingError = (parking == null)
@@ -557,7 +574,7 @@ fun AddHikeScreen(
                         val hike = HikeModel(
                             name = name,
                             location = location,
-                            dateMs = dateMs,
+                            dateMs = dateMs!!,
                             parking = parking == true,
                             plannedLengthKm = lengthKm.toDoubleOrNull() ?: 0.0,
                             difficulty = difficulty,
