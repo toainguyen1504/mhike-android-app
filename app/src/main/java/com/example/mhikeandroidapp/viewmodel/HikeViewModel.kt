@@ -87,7 +87,7 @@ class HikeViewModel(
     val searchQuery: StateFlow<String> = _searchQuery
 
     // filters
-    private val _filterLengthRange = MutableStateFlow(0f..100f)
+    private val _filterLengthRange = MutableStateFlow(0f..1000f)
     private val _filterDifficulty = MutableStateFlow<String?>(null)
 
     fun updateLengthRange(range: ClosedFloatingPointRange<Float>) {

@@ -201,6 +201,8 @@ fun HikeListScreen(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                val hikesToShow = if (isSearching || showFilterDialog) filtered else allHikes
+
                 when {
                     // Empty hike
                     allHikes.isEmpty() && !isSearching -> {
@@ -213,11 +215,22 @@ fun HikeListScreen(
                         }
                     }
 
+                    // filter but no result
+                    filtered.isEmpty() -> {
+                        item {
+                            Text(
+                                text = "No results found… Please try different conditions.",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = TextSecondary
+                            )
+                        }
+                    }
+
                     // search but no result
                     isSearching && filtered.isEmpty() -> {
                         item {
                             Text(
-                                text = "No results found",
+                                text = "No results found… Please try another search condition.",
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = TextSecondary
                             )
