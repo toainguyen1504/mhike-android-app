@@ -59,7 +59,6 @@ class MainActivity : ComponentActivity() {
 
                 // Hikes
                 val hikeViewModel: HikeViewModel = viewModel(factory = hikeFactory)
-                val hikes by hikeViewModel.hikes.collectAsState(initial = emptyList())
 
                 // Observations
                 val observationViewModel: ObservationViewModel = viewModel(factory = observationFactory)
