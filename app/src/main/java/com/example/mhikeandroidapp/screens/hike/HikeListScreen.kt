@@ -70,8 +70,12 @@ fun HikeListScreen(
 
 
     Box(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp)
+            .padding(top = 60.dp)
+            .padding(bottom = 16.dp)
+        ) {
             // Header: Title + Search (no scroll)
             Row(
                 modifier = Modifier.fillMaxWidth(),
