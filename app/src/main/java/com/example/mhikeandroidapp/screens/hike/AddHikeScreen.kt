@@ -41,6 +41,8 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,6 +52,7 @@ fun AddHikeScreen(
 ) {
     val LightPrimaryGreen = PrimaryGreen.copy(alpha = 0.1f)
     val context = LocalContext.current
+    val decimalFormat = DecimalFormat("#.##", DecimalFormatSymbols(Locale.US))
 
     var name by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
@@ -733,7 +736,7 @@ fun AddHikeScreen(
                         Text("Name: ${hike.name}", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
                         Text("Location: ${hike.location}", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
                         Text("Date: ${dateFormatter.format(Date(hike.dateMs))}", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
-                        Text("Length: ${hike.plannedLengthKm} km", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
+                        Text("Length: ${decimalFormat.format(hike.plannedLengthKm)} km", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
                         Text("Difficulty: ${hike.difficulty}", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
                         Text("Parking: ${if (hike.parking) "Yes" else "No"}", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
                         Text("Duration: ${hike.estimatedDurationMinutes ?: "—"} minutes", style = MaterialTheme.typography.bodyLarge, color = TextBlack)

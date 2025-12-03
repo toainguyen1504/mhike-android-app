@@ -45,6 +45,8 @@ import com.example.mhikeandroidapp.viewmodel.ObservationViewModel
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
+import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -67,6 +69,7 @@ fun HikeDetailScreen(
 ) {
     val context = LocalContext.current
     val LightPrimaryGreen = PrimaryGreen.copy(alpha = 0.2f)
+    val decimalFormat = DecimalFormat("#.##", DecimalFormatSymbols(Locale.US))
 
     // utils
     val dateFormatter = remember {
@@ -256,7 +259,7 @@ fun HikeDetailScreen(
                             Text("Parking: ${if (hike.parking) "Yes" else "No"}", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
                             Spacer(modifier = Modifier.height(8.dp))
 
-                            Text("Length: ${hike.plannedLengthKm} km", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
+                            Text("Length:  ${decimalFormat.format(hike.plannedLengthKm)} km", style = MaterialTheme.typography.bodyLarge, color = TextBlack)
                             Spacer(modifier = Modifier.height(8.dp))
 
                             Text("Difficulty: ${hike.difficulty}", style = MaterialTheme.typography.bodyLarge, color = TextBlack)

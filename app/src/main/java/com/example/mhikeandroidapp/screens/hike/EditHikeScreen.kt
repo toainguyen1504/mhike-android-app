@@ -39,6 +39,8 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -50,13 +52,14 @@ fun EditHikeScreen(
 ) {
     val LightPrimaryGreen = PrimaryGreen.copy(alpha = 0.1f)
     val context = LocalContext.current
+    val decimalFormat = DecimalFormat("#.##", DecimalFormatSymbols(Locale.US))
 
     // Khởi tạo state từ dữ liệu hike
     var name by remember { mutableStateOf(hike.name) }
     var location by remember { mutableStateOf(hike.location) }
     var dateMs by remember { mutableStateOf(hike.dateMs) }
     var parking: Boolean? by remember { mutableStateOf(hike.parking) }
-    var lengthKm by remember { mutableStateOf(hike.plannedLengthKm.toString()) }
+    var lengthKm by remember { mutableStateOf(decimalFormat.format(hike.plannedLengthKm)) }
     var description by remember { mutableStateOf(hike.description ?: "") }
     var duration by remember { mutableStateOf(hike.estimatedDurationMinutes?.toString() ?: "") }
     var groupSize by remember { mutableStateOf(hike.groupSize?.toString() ?: "") }
