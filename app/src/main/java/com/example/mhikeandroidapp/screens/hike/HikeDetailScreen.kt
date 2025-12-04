@@ -155,6 +155,13 @@ fun HikeDetailScreen(
 
     // Sync
     val coroutineScope = rememberCoroutineScope()
+    val syncStatus by hikeViewModel.syncStatus.collectAsState()
+
+    LaunchedEffect(syncStatus) {
+        syncStatus?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -323,7 +330,7 @@ fun HikeDetailScreen(
                                         coroutineScope.launch {
                                             val observations = observationViewModel.getObservationsForHikeOnce(hike.id)
                                             hikeViewModel.syncToCloud(hike, observations)
-                                            Toast.makeText(context, "Synced to cloud!", Toast.LENGTH_SHORT).show()
+//                                            Toast.makeText(context, "Synced to cloud!", Toast.LENGTH_SHORT).show()
                                         }
                                     }
                             ) {

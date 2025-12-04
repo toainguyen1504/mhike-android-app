@@ -43,8 +43,9 @@ class HikeViewModel(
                     return@launch
                 }
                 val observations = observationRepository.getObservationsForHike(hikeId)
-                SyncUtils.syncHikeToCloud(hike, observations)
-                _syncStatus.value = "Sync successful"
+                val success = SyncUtils.syncHikeToCloud(hike, observations)
+                _syncStatus.value = if (success) "Sync successful" else "Sync failed"
+
             } catch (e: Exception) {
                 _syncStatus.value = "Sync error: ${e.message}"
             }
@@ -56,8 +57,8 @@ class HikeViewModel(
         viewModelScope.launch {
             _syncStatus.value = "Syncing..."
             try {
-                SyncUtils.syncHikeToCloud(hike, observations)
-                _syncStatus.value = "Sync successful"
+                val success = SyncUtils.syncHikeToCloud(hike, observations)
+                _syncStatus.value = if (success) "Sync successful" else "Sync failed"
             } catch (e: Exception) {
                 _syncStatus.value = "Sync error: ${e.message}"
             }
@@ -67,20 +68,29 @@ class HikeViewModel(
     // Sync all hikes in the local database
     fun syncAllHikesToCloud(onDone: () -> Unit = {}) {
         viewModelScope.launch {
-            _syncStatus.value = "Syncing all hikes..."
             val allHikes = hikes.value
+            if (allHikes.isEmpty()) {
+                _syncStatus.value = "No hikes to sync"
+                onDone()
+                return@launch
+            }
+
+            _syncStatus.value = "Syncing all hikes..."
+            var successCount = 0
             for (hike in allHikes) {
                 val observations = observationRepository.getByHikeId(hike.id)
                 try {
-                    SyncUtils.syncHikeToCloud(hike, observations)
+                    val success = SyncUtils.syncHikeToCloud(hike, observations)
+                    if (success) successCount++
                 } catch (e: Exception) {
                     Log.e("HikeViewModel", "Sync failed for hike ${hike.id}: ${e.message}")
                 }
             }
-            _syncStatus.value = "All hikes synced successfully"
+            _syncStatus.value = "Synced $successCount hikes successfully"
             onDone()
         }
     }
+
 
     // state search
     private val _searchQuery = MutableStateFlow("")

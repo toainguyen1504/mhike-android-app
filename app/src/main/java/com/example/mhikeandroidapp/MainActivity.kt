@@ -30,12 +30,15 @@ import com.example.mhikeandroidapp.screens.hike.EditHikeScreen
 import com.example.mhikeandroidapp.screens.hike.HikeDetailScreen
 import com.example.mhikeandroidapp.ui.theme.PrimaryGreen
 import com.example.mhikeandroidapp.viewmodel.ObservationViewModel
+import com.google.firebase.FirebaseApp
 
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         installSplashScreen()
+
+        FirebaseApp.initializeApp(this)
 
         // custom status bar
         window.statusBarColor = android.graphics.Color.parseColor("#FFFBFE") //background

@@ -1,6 +1,7 @@
 package com.example.mhikeandroidapp.utils
 
 import android.net.Uri
+import android.util.Log
 import com.example.mhikeandroidapp.data.hike.HikeModel
 import com.example.mhikeandroidapp.data.observation.ObservationModel
 import com.google.firebase.firestore.FirebaseFirestore
@@ -44,31 +45,39 @@ object SyncUtils {
         return uploadImageToFirebase(urlOrPath) // local path
     }
 
-    suspend fun syncHikeToCloud(hike: HikeModel, observations: List<ObservationModel>) {
-        require(hike.id != 0L) { "Hike chưa có id hợp lệ (autoGenerate). Insert trước khi sync." }
+    suspend fun syncHikeToCloud(hike: HikeModel, observations: List<ObservationModel>): Boolean {
+        return try {
+            require(hike.id != 0L) { "Hike chưa có id hợp lệ (autoGenerate). Insert trước khi sync." }
 
-        val db = FirebaseFirestore.getInstance()
+            val db = FirebaseFirestore.getInstance()
 
-        val hikeImageUrl = ensureUploaded(hike.imageUri)
-        val hikeData = hike.toMap(hikeImageUrl)
-
-        db.collection("hikes")
-            .document(hike.id.toString())
-            .set(hikeData)
-            .await()
-
-        for (obs in observations) {
-            val obsImageUrl = ensureUploaded(obs.imageObservationUri)
-            val obsData = obs.toMap(obsImageUrl)
+            val hikeImageUrl = ensureUploaded(hike.imageUri)
+            val hikeData = hike.toMap(hikeImageUrl)
 
             db.collection("hikes")
                 .document(hike.id.toString())
-                .collection("observations")
-                .document(obs.id.toString())
-                .set(obsData)
+                .set(hikeData)
                 .await()
+
+            for (obs in observations) {
+                val obsImageUrl = ensureUploaded(obs.imageObservationUri)
+                val obsData = obs.toMap(obsImageUrl)
+
+                db.collection("hikes")
+                    .document(hike.id.toString())
+                    .collection("observations")
+                    .document(obs.id.toString())
+                    .set(obsData)
+                    .await()
+            }
+
+            true
+        } catch (e: Exception) {
+            Log.e("SyncUtils", "Sync failed: ${e.message}")
+            false
         }
     }
+
 
     suspend fun uploadImageToFirebase(localPath: String): String? {
         val file = File(localPath)
