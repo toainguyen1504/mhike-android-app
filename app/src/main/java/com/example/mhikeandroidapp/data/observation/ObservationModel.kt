@@ -22,8 +22,8 @@ data class ObservationModel(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0L,
 
-    val hikeId: Long,                 // FK → Hike.id
-    val observationText: String,     // Nội dung quan sát (required)
+    val hikeId: Long,                 // FK Hike.id
+    val observationText: String,     // required
     val timeMs: Long = System.currentTimeMillis(), // required - default
 
     val comments: String? = null,    // optional

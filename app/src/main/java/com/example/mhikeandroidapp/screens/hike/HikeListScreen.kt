@@ -39,10 +39,10 @@ import com.example.mhikeandroidapp.ui.theme.TextBlack
 import com.example.mhikeandroidapp.ui.theme.TextSecondary
 import com.example.mhikeandroidapp.viewmodel.HikeViewModel
 import java.io.File
-import java.text.Normalizer
 import java.text.SimpleDateFormat
 import java.util.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HikeListScreen(
     viewModel: HikeViewModel,
@@ -52,8 +52,7 @@ fun HikeListScreen(
     navController: NavHostController
 ) {
     val context = LocalContext.current
-//    val searchQuery by viewModel.searchQuery.collectAsState()
-    var searchField by remember { mutableStateOf(TextFieldValue("")) }   // UI state for search field
+    var searchField by remember { mutableStateOf(TextFieldValue("")) }
 
     val LightPrimaryGreen = PrimaryGreen.copy(alpha = 0.1f)
     var showDeleteAllDialog by remember { mutableStateOf(false) }
@@ -62,215 +61,213 @@ fun HikeListScreen(
     val isSearching = searchField.text.isNotBlank()
     var isSyncing by remember { mutableStateOf(false) }
 
-    // filter
     var showFilterDialog by remember { mutableStateOf(false) }
-    var lengthRange by remember { mutableStateOf(0f..1000f) } // km
-    var selectedDifficulty  by remember { mutableStateOf<String?>(null) }
+    var lengthRange by remember { mutableStateOf(0f..1000f) }
+    var selectedDifficulty by remember { mutableStateOf<String?>(null) }
+    var expanded by remember { mutableStateOf(false) }
 
-
-
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp)
-            .padding(top = 60.dp)
-            .padding(bottom = 16.dp)
-        ) {
-            // Header: Title + Search (no scroll)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Hiker Management",
-                    style = MaterialTheme.typography.displayMedium,
-                    color = PrimaryGreen
-                )
-
-                // State open/ close menu
-                var expanded by remember { mutableStateOf(false) }
-
-                Box {
-                    IconButton(onClick = { expanded = true }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.menu_icon),
-                            contentDescription = "Menu",
-                            tint = TextBlack,
-                            modifier = Modifier
-                                .size(40.dp)
-                                .padding(8.dp)
-                        )
-                    }
-
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false },
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Row(
                         modifier = Modifier
-                            .padding(horizontal = 16.dp)
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Sync hikes to cloud
-                        DropdownMenuItem(
-                            onClick = {
-                                expanded = false
-                                isSyncing = true
-                                // TODO: sync all to cloud
-                                viewModel.syncAllHikesToCloud {
-                                    isSyncing = false
-                                    Toast.makeText(context, "All hikes synced to cloud!", Toast.LENGTH_SHORT).show()
-                                }
-                            },
-                            text = { Text("Sync all to cloud", color = TextBlack) },
+                        Text(
+                            text = "Hiker Management",
+                            style = MaterialTheme.typography.displayLarge,
+                            color = PrimaryGreen
                         )
-                        Divider(color = Color.LightGray, thickness = 1.dp)
 
-                        // Delete
-                        DropdownMenuItem(
-                            onClick = {
-                                expanded = false
-                                showDeleteAllDialog = true // open dialog confirm
-                            },
-                            text = { Text("Delete all hikes", color = ErrorRed) },
-                        )
+                        Box {
+                            IconButton(onClick = { expanded = true }) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.menu_icon),
+                                    contentDescription = "Menu",
+                                    tint = TextBlack,
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .padding(8.dp)
+                                )
+                            }
+
+                            DropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false },
+                                modifier = Modifier.padding(horizontal = 16.dp)
+                            ) {
+                                DropdownMenuItem(
+                                    onClick = {
+                                        expanded = false
+                                        isSyncing = true
+                                        viewModel.syncAllHikesToCloud {
+                                            isSyncing = false
+                                            Toast.makeText(context, "All hikes synced to cloud!", Toast.LENGTH_SHORT).show()
+                                        }
+                                    },
+                                    text = { Text("Sync all to cloud", color = TextBlack) }
+                                )
+                                Divider(color = Color.LightGray, thickness = 1.dp)
+                                DropdownMenuItem(
+                                    onClick = {
+                                        expanded = false
+                                        showDeleteAllDialog = true
+                                    },
+                                    text = { Text("Delete all hikes", color = ErrorRed) }
+                                )
+                            }
+                        }
                     }
-                }
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Search
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                OutlinedTextField(
-                    value = searchField,
-                    onValueChange = {
-                        searchField = it
-                        viewModel.updateSearchQuery(it.text) // đồng bộ với ViewModel
-                    },
-                    placeholder = {
-                        Text("Search by name or location...",
-                            color = PrimaryGreen.copy(0.6f),
-                            style = MaterialTheme.typography.bodyMedium) },
-                    leadingIcon = {
-                        Icon(
-                            painter = painterResource(id = R.drawable.search_icon),
-                            contentDescription = "Search",
-                            modifier = Modifier.size(24.dp),
-                            tint = PrimaryGreen
-                        )
-                    },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(56.dp),
-                    shape = RoundedCornerShape(24.dp),
-                    singleLine = true,
-                    colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = PrimaryGreen,
-                        unfocusedIndicatorColor = Color.Transparent,
-                        cursorColor = PrimaryGreen,
-                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                        focusedContainerColor = LightPrimaryGreen,
-                        unfocusedContainerColor = LightPrimaryGreen
-                    )
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = PrimaryGreen
                 )
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                // Filter icon button
-                IconButton(
-                    onClick = { showFilterDialog = true },
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(LightPrimaryGreen)
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.filter_icon),
-                        contentDescription = "Filter",
-                        tint = PrimaryGreen,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // List hike
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                val hikesToShow = if (isSearching || showFilterDialog) filtered else allHikes
-
-                when {
-                    // Empty hike
-                    allHikes.isEmpty() && !isSearching -> {
-                        item {
-                            Text(
-                                text = "No hikes yet. Add one!",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = TextSecondary
-                            )
-                        }
-                    }
-
-                    // filter but no result
-                    filtered.isEmpty() -> {
-                        item {
-                            Text(
-                                text = "No results found… Please try different conditions.",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = TextSecondary
-                            )
-                        }
-                    }
-
-                    // search but no result
-                    isSearching && filtered.isEmpty() -> {
-                        item {
-                            Text(
-                                text = "No results found… Please try another search condition.",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = TextSecondary
-                            )
-                        }
-                    }
-
-                    // having hikes
-                    else -> {
-                        items(filtered) { hike ->
-                            HikeItem(
-                                hike = hike,
-                                onClick = { selected -> navController.navigate("hike_detail/${selected.id}") }
-                            )
-                        }
-                    }
-                }
-
-                item { Spacer(modifier = Modifier.height(80.dp)) }
-            }
-
-        }
-
-        // Floating Add Hike Button
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 24.dp, bottom = 72.dp)
-                .size(68.dp)
-                .shadow(8.dp, CircleShape, clip = false)
-                .clip(CircleShape)
-                .background(HighlightsGreen)
-                .clickable { navController.navigate("add_hike") },
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.plus_icon),
-                contentDescription = "Add Hike",
-                tint = Color.White,
-                modifier = Modifier.size(28.dp)
             )
+        }
+    ) { innerPadding ->
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(horizontal = 16.dp)
+            ) {
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        value = searchField,
+                        onValueChange = {
+                            searchField = it
+                            viewModel.updateSearchQuery(it.text)
+                        },
+                        placeholder = {
+                            Text(
+                                "Search by name or location...",
+                                color = PrimaryGreen.copy(0.6f),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(
+                                painter = painterResource(id = R.drawable.search_icon),
+                                contentDescription = "Search",
+                                modifier = Modifier.size(24.dp),
+                                tint = PrimaryGreen
+                            )
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(56.dp),
+                        shape = RoundedCornerShape(24.dp),
+                        singleLine = true,
+                        colors = TextFieldDefaults.colors(
+                            focusedIndicatorColor = PrimaryGreen,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            cursorColor = PrimaryGreen,
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            focusedContainerColor = LightPrimaryGreen,
+                            unfocusedContainerColor = LightPrimaryGreen
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    IconButton(
+                        onClick = { showFilterDialog = true },
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(LightPrimaryGreen)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.filter_icon),
+                            contentDescription = "Filter",
+                            tint = PrimaryGreen,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+
+                    when {
+                        allHikes.isEmpty() && !isSearching -> {
+                            item {
+                                Text(
+                                    text = "No hikes yet. Add one!",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = TextSecondary
+                                )
+                            }
+                        }
+
+                        filtered.isEmpty() -> {
+                            item {
+                                Text(
+                                    text = "No results found… Please try different conditions.",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = TextSecondary
+                                )
+                            }
+                        }
+
+                        isSearching && filtered.isEmpty() -> {
+                            item {
+                                Text(
+                                    text = "No results found… Please try another search condition.",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = TextSecondary
+                                )
+                            }
+                        }
+
+                        else -> {
+                            items(filtered) { hike ->
+                                HikeItem(
+                                    hike = hike,
+                                    onClick = { selected -> navController.navigate("hike_detail/${selected.id}") }
+                                )
+                            }
+                        }
+                    }
+
+                    item { Spacer(modifier = Modifier.height(80.dp)) }
+                }
+            }
+
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 24.dp, bottom = 72.dp)
+                    .size(68.dp)
+                    .shadow(8.dp, CircleShape, clip = false)
+                    .clip(CircleShape)
+                    .background(HighlightsGreen)
+                    .clickable { navController.navigate("add_hike") },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.plus_icon),
+                    contentDescription = "Add Hike",
+                    tint = Color.White,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
         }
     }
 
@@ -427,6 +424,7 @@ fun HikeListScreen(
                     }
                 }
             },
+
             //action buttons
             confirmButton = {
                 Row(
@@ -479,7 +477,6 @@ fun HikeListScreen(
         )
     }
 
-
 }
 
 @Composable
@@ -487,8 +484,6 @@ fun HikeItem(
     hike: HikeModel,
     onClick: (HikeModel) -> Unit
 ) {
-    var menuExpanded by remember { mutableStateOf(false) }
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -564,9 +559,4 @@ fun HikeItem(
             Spacer(modifier = Modifier.width(4.dp))
         }
     }
-}
-
-fun formatDate(epochMs: Long): String {
-    val sdf = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
-    return sdf.format(Date(epochMs))
 }
