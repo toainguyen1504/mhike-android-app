@@ -46,8 +46,6 @@ import java.util.*
 @Composable
 fun HikeListScreen(
     viewModel: HikeViewModel,
-    onSearch: (String) -> Unit,
-    onHikeClick: (HikeModel) -> Unit,
     modifier: Modifier = Modifier,
     navController: NavHostController
 ) {
@@ -143,6 +141,7 @@ fun HikeListScreen(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // Search
                     OutlinedTextField(
                         value = searchField,
                         onValueChange = {
@@ -182,6 +181,7 @@ fun HikeListScreen(
 
                     Spacer(modifier = Modifier.width(8.dp))
 
+                    // Filter
                     IconButton(
                         onClick = { showFilterDialog = true },
                         modifier = Modifier
@@ -200,6 +200,7 @@ fun HikeListScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Hike list
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(12.dp)

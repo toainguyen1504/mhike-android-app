@@ -74,8 +74,6 @@ class MainActivity : ComponentActivity() {
                                 viewModel = hikeViewModel,
                                 modifier = Modifier.padding(innerPadding),
                                 navController = navController,
-                                onSearch = { query -> /* TODO: search */ },
-                                onHikeClick = { hike -> /* TODO: navigate to detail */ }
                             )
                         }
                     }
