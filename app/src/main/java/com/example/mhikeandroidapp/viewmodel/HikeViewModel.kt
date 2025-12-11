@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -125,12 +124,10 @@ class HikeViewModel(
         }.sortedByDescending { it.dateMs }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-
     // CRUD operations
     fun addHike(hike: HikeModel) {
         viewModelScope.launch {
             hikeRepository.insertHike(hike)
-            // Optional: force refresh if needed
             _searchQuery.value = ""
         }
     }

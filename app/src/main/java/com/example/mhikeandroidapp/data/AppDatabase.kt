@@ -10,7 +10,6 @@ import com.example.mhikeandroidapp.data.observation.ObservationDao
 import com.example.mhikeandroidapp.data.observation.ObservationModel
 
 @Database(entities = [HikeModel::class, ObservationModel::class], version = 2, exportSchema = false)
-//@TypeConverters(TypeConverters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun hikeDao(): HikeDao
     abstract fun observationDao(): ObservationDao
@@ -24,7 +23,7 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "app_db"
+                    "mhike-db"
                 )
                     .fallbackToDestructiveMigration()
                     .build()

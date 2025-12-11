@@ -18,6 +18,4 @@ class HikeRepository(private val db: AppDatabase) {
     suspend fun deleteHike(hike: HikeModel) = db.hikeDao().deleteHike(hike)
 
     suspend fun deleteAll() = db.hikeDao().deleteAll()
-
-    fun searchHikes(query: String): Flow<List<HikeModel>> = db.hikeDao().searchHikesFlow(query)
 }

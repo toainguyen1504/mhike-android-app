@@ -1,6 +1,5 @@
 package com.example.mhikeandroidapp.data.hike
 import androidx.room.*
-import com.example.mhikeandroidapp.data.hike.HikeModel
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -39,7 +38,6 @@ interface HikeDao {
         SELECT * FROM hikes
         WHERE name LIKE '%' || :query || '%'
            OR location LIKE '%' || :query || '%'
-        ORDER BY dateMs ASC
     """)
     fun searchHikesFlow(query: String): Flow<List<HikeModel>>
 }

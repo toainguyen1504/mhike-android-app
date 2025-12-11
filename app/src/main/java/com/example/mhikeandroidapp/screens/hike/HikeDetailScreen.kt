@@ -26,19 +26,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.example.mhikeandroidapp.R
-import com.example.mhikeandroidapp.data.AppDatabase
 import com.example.mhikeandroidapp.data.hike.HikeModel
 import com.example.mhikeandroidapp.data.observation.ObservationModel
-import com.example.mhikeandroidapp.data.observation.ObservationRepository
 import com.example.mhikeandroidapp.ui.theme.*
 import com.example.mhikeandroidapp.viewmodel.HikeViewModel
 import com.example.mhikeandroidapp.viewmodel.ObservationViewModel
@@ -129,7 +125,7 @@ fun HikeDetailScreen(
                             input.copyTo(output)
                         }
                     }
-                    // Lưu đường dẫn file thay vì content://
+                    // Lưu đường dẫn file
                     imageObservationUri = file.absolutePath
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -489,8 +485,6 @@ fun HikeDetailScreen(
                 }
             }
 
-
-
             item {
                 Spacer(modifier = Modifier.height(500.dp)) // add margin bottom to test SCROLL
             }
@@ -694,7 +688,6 @@ fun HikeDetailScreen(
                                     observationText = observationText,
                                     timeMs = System.currentTimeMillis(),
                                     comments = comments.ifBlank { null },
-//                                    imageObservationUri = imageObservationUri.ifBlank { null }
                                     imageObservationUri = imageObservationUri,
                                 )
 
@@ -933,7 +926,6 @@ fun HikeDetailScreen(
                                 val updated = editingObservation!!.copy(
                                     observationText = observationText,
                                     comments = comments.ifBlank { null },
-//                                    imageObservationUri = imageObservationUri.ifBlank { null }
                                     imageObservationUri = imageObservationUri,
                                 )
 
